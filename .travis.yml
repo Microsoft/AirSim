@@ -26,6 +26,12 @@ jobs:
       os: osx
       osx_image: xcode11.3
 
+    - name: PX4 Test
+      os: linux
+      dist: bionic
+      env:
+        - PX4=true
+
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -44,7 +50,9 @@ script:
       ./setup.sh;
       ./build.sh || travis_terminate 1;
       echo "Starting Unity Build!";
-      cd Unity && ./build.sh 2> Unity_error.txt || ((cat Unity_error.txt | grep -i "error:" -B 10 -A 10) && exit 1);
+      (cd Unity && ./build.sh 2> Unity_error.txt ||
+        ((cat Unity_error.txt | grep -i "error:" -B 10 -A 10) && travis_terminate 1)
+      );
     elif [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
       export PATH=$MSBUILD_PATH:$PATH_FIX:$PATH;
       cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64 '&&'
@@ -55,4 +63,9 @@ script:
       ./build.sh || travis_terminate 1;
       echo "Starting Unity Build!";
       cd Unity && ./build.sh 2> Unity_error.txt || ((cat Unity_error.txt | grep -i "error:" -B 10 -A 10) && exit 1);
+    fi
+
+  - if [[ "$PX4" == "true" ]]; then
+      echo "Starting PX4 Test";
+      ./test/test_px4_sitl.sh;
     fi
