@@ -2,15 +2,13 @@ ARG BASE_IMAGE=adamrehn/ue4-engine:4.19.2-cudagl10.0
 FROM $BASE_IMAGE
 
 USER root
-RUN apt-get update
-RUN apt-get install \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends \
 	rsync \
     sudo \
     wget \
-    x11-xserver-utils \
-    -y --no-install-recommends
+    x11-xserver-utils
 
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \ 
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
     adduser ue4 sudo 
 
 USER ue4
@@ -19,5 +17,5 @@ RUN cd /home/ue4 && \
 	cd AirSim && \
 	./setup.sh && \
 	./build.sh
-	
+
 WORKDIR /home/ue4
