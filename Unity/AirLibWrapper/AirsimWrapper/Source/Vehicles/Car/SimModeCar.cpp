@@ -5,7 +5,7 @@
 #include "vehicles/car/api/CarRpcLibServer.hpp"
 #include "../../PInvokeWrapper.h"
 
-SimModeCar::SimModeCar(std::string car_name, int port_number) : SimModeBase(car_name, port_number)
+SimModeCar::SimModeCar(int port_number) : SimModeBase(port_number)
 {
 }
 
@@ -34,7 +34,7 @@ void SimModeCar::pause(bool is_paused)
 	else
 		current_clockspeed_ = getSettings().clock_speed;
 
-	Pause(vehicle_name_.c_str(), current_clockspeed_);
+	Pause(current_clockspeed_);
 }
 
 void SimModeCar::continueForTime(double seconds)
@@ -80,9 +80,9 @@ bool SimModeCar::isVehicleTypeSupported(const std::string& vehicle_type) const
 	return vehicle_type == AirSimSettings::kVehicleTypePhysXCar;
 }
 
-UnityPawn* SimModeCar::GetVehiclePawn()
+UnityPawn* SimModeCar::GetVehiclePawn(const std::string& vehicle_name)
 {
-	return new CarPawn(vehicle_name_);
+	return new CarPawn(vehicle_name);
 }
 
 std::unique_ptr<PawnSimApi> SimModeCar::createVehicleSimApi(const PawnSimApi::Params& pawn_sim_api_params) const
@@ -90,7 +90,7 @@ std::unique_ptr<PawnSimApi> SimModeCar::createVehicleSimApi(const PawnSimApi::Pa
 	auto vehicle_pawn = static_cast<TVehiclePawn*>(pawn_sim_api_params.pawn);
 
 	auto vehicle_sim_api = std::unique_ptr<PawnSimApi>(new CarPawnSimApi(pawn_sim_api_params,
-		vehicle_pawn->getKeyBoardControls(), vehicle_name_));
+		vehicle_pawn->getKeyBoardControls(), pawn_sim_api_params.vehicle_name));
     vehicle_sim_api->initialize();
 	vehicle_sim_api->reset();
 	return vehicle_sim_api;

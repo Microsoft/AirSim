@@ -13,12 +13,12 @@
 
 static SimHUD* key = nullptr;
 
-void StartServerThread(std::string vehicle_name, std::string sim_mode_name, int port_number);
+void StartServerThread(std::string sim_mode_name, int port_number);
 
-extern "C" EXPORT bool StartServer(char* vehicle_name, char* sim_mode_name, int port_number)
+extern "C" EXPORT bool StartServer(char* sim_mode_name, int port_number)
 {
 	LOGGER->WriteLog("Starting server for : " + std::string(sim_mode_name));
-	std::thread server_thread(StartServerThread, vehicle_name, sim_mode_name, port_number);
+	std::thread server_thread(StartServerThread, sim_mode_name, port_number);
 	server_thread.detach();
 	int waitCounter = 25; // waiting for maximum 5 seconds to start a server.
 	while ((key == nullptr || !key->server_started_Successfully_) && waitCounter > 0)
@@ -29,7 +29,7 @@ extern "C" EXPORT bool StartServer(char* vehicle_name, char* sim_mode_name, int 
 	return key->server_started_Successfully_;
 }
 
-extern "C" EXPORT void StopServer(char* vehicle_name)
+extern "C" EXPORT void StopServer()
 {
 	key->EndPlay();
 	if (key != nullptr)
@@ -45,12 +45,12 @@ extern "C" EXPORT void CallTick(float deltaSeconds)
 	key->Tick(deltaSeconds);
 }
 
-extern "C" EXPORT void InvokeCollisionDetection(AirSimUnity::AirSimCollisionInfo collision_info)
+extern "C" EXPORT void InvokeCollisionDetection(char* vehicle_name, AirSimUnity::AirSimCollisionInfo collision_info)
 {
 	auto simMode = key->GetSimMode();
 	if (simMode)
 	{
-		auto vehicleApi = simMode->getVehicleSimApi(simMode->vehicle_name_);
+		auto vehicleApi = simMode->getVehicleSimApi(vehicle_name);
 		if (vehicleApi)
 		{
 			msr::airlib::CollisionInfo collisionInfo = UnityUtilities::Convert_to_AirSimCollisioinInfo(collision_info);

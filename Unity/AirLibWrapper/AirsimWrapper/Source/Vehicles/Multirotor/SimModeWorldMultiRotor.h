@@ -15,11 +15,11 @@ protected:
 		const PawnSimApi* sim_api) const override;
 
 public:
-	SimModeWorldMultiRotor(std::string multi_rotor_name, int port_number);
+	SimModeWorldMultiRotor(int port_number);
 	virtual void BeginPlay() override;
 	virtual void EndPlay() override;
 	void Tick(float DeltaSeconds) override;
-	UnityPawn* GetVehiclePawn() override;
+	UnityPawn* GetVehiclePawn(const std::string& vehicle_name) override;
 
 private:
 	typedef FlyingPawn TVehiclePawn;

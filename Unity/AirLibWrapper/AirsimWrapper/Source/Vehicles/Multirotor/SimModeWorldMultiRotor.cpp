@@ -3,8 +3,8 @@
 #include "MultirotorPawnSimApi.h"
 #include "vehicles/multirotor/api/MultirotorRpcLibServer.hpp"
 
-SimModeWorldMultiRotor::SimModeWorldMultiRotor(std::string multiRotorName, int port_number) :
-	SimModeWorldBase(multiRotorName, port_number)
+SimModeWorldMultiRotor::SimModeWorldMultiRotor(int port_number) :
+	SimModeWorldBase(port_number)
 {
 }
 
@@ -28,9 +28,9 @@ void SimModeWorldMultiRotor::EndPlay()
 	SimModeWorldBase::EndPlay();
 }
 
-UnityPawn* SimModeWorldMultiRotor::GetVehiclePawn()
+UnityPawn* SimModeWorldMultiRotor::GetVehiclePawn(const std::string& vehicle_name)
 {
-	return new FlyingPawn(vehicle_name_);
+	return new FlyingPawn(vehicle_name);
 }
 
 void SimModeWorldMultiRotor::setupClockSpeed()

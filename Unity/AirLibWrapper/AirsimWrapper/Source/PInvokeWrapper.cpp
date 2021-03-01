@@ -19,10 +19,10 @@ bool(*SetSegmentationObjectId)(const char* meshName, int objectId, bool isNameRe
 int(*GetSegmentationObjectId)(const char* meshName);
 bool(*PrintLogMessage) (const char* message, const char* messageParam, const char* vehicleName, int severity);
 UnityTransform(*GetTransformFromUnity)(const char* vehicleName);
-bool(*Reset)(const char* vehicleName);
+bool(*Reset)();
 AirSimVector(*GetVelocity)(const char* vehicleName);
 RayCastHitResult(*GetRayCastHit)(AirSimVector startVec, AirSimVector endVec, const char* vehicleName);
-bool(*Pause)(const char* vehicleName, float timeScale);
+bool(*Pause)(float timeScale);
 
 void InitVehicleManager(
 	bool(*setPose)(AirSimPose pose, bool ignoreCollision, const char* vehicleName),
@@ -43,10 +43,10 @@ void InitVehicleManager(
 	int(*getSegmentationObjectId)(const char* meshName),
 	bool(*printLogMessage) (const char* message, const char* messageParam, const char* vehicleName, int severity),
 	UnityTransform(*getTransformFromUnity)(const char* vehicleName),
-	bool(*reset)(const char* vehicleName),
+	bool(*reset)(),
 	AirSimVector(*getVelocity)(const char* vehicleName),
 	RayCastHitResult(*getRayCastHit)(AirSimVector startVec, AirSimVector endVec, const char* vehicleName),
-	bool(*pause)(const char* vehicleName, float timeScale)
+	bool(*pause)(float timeScale)
 )
 {
 	SetPose = setPose;

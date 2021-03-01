@@ -41,6 +41,8 @@ namespace AirSimUnity {
                 transform.position = position;
                 transform.rotation = rotation;
 
+                currentPose = poseFromAirLib;
+
                 for (int i = 0; i < rotors.Length; i++)
                 {
                     float rotorSpeed = (float) (rotorInfos[i].rotorSpeed * rotorInfos[i].rotorDirection * 180 /

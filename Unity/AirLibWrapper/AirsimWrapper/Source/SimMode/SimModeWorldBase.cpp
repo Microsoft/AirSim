@@ -2,8 +2,8 @@
 #include "SimModeWorldBase.h"
 #include "../PInvokeWrapper.h"
 
-SimModeWorldBase::SimModeWorldBase(std::string multiRotorName, int port_number) : 
-	SimModeBase(multiRotorName, port_number)
+SimModeWorldBase::SimModeWorldBase(int port_number) : 
+	SimModeBase(port_number)
 {
 }
 
@@ -74,7 +74,7 @@ std::unique_ptr<SimModeWorldBase::PhysicsEngineBase> SimModeWorldBase::createPhy
 	else 
 	{
 		physics_engine.reset();
-		PrintLogMessage("Unrecognized physics engine name: ", physics_engine_name.c_str(), vehicle_name_.c_str(), ErrorLogSeverity::Warnning);
+		PrintLogMessage("Unrecognized physics engine name: ", physics_engine_name.c_str(), "", ErrorLogSeverity::Warnning);
 	}
 	return physics_engine;
 }

@@ -378,7 +378,7 @@ public: //methods
     {
         initializeSubwindowSettings(subwindow_settings);
         initializePawnPaths(pawn_paths);
-        initializeVehicleSettings(vehicles);
+        //initializeVehicleSettings(vehicles);
     }
 
     //returns number of warnings
@@ -767,39 +767,43 @@ private:
         return vehicle_setting;
     }
 
-    static void initializeVehicleSettings(std::map<std::string, std::unique_ptr<VehicleSetting>>& vehicles)
+    static void initializeVehicleSettings(const std::string& simmode_name, std::map<std::string, std::unique_ptr<VehicleSetting>>& vehicles)
     {
         vehicles.clear();
 
         //NOTE: Do not set defaults for vehicle type here. If you do then make sure
         //to sync code in createVehicleSetting() as well.
 
-        //create simple flight as default multirotor
-        auto simple_flight_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting());
-        simple_flight_setting->vehicle_name = "SimpleFlight";
-        simple_flight_setting->vehicle_type = kVehicleTypeSimpleFlight;
-        //TODO: we should be selecting remote if available else keyboard
-        //currently keyboard is not supported so use rc as default
-        simple_flight_setting->rc.remote_control_id = 0;
-        vehicles[simple_flight_setting->vehicle_name] = std::move(simple_flight_setting);
-
-        //create default car vehicle
-        auto physx_car_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting());
-        physx_car_setting->vehicle_name = "PhysXCar";
-        physx_car_setting->vehicle_type = kVehicleTypePhysXCar;
-        vehicles[physx_car_setting->vehicle_name] = std::move(physx_car_setting);
-
-        //create default computer vision vehicle
-        auto cv_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting());
-        cv_setting->vehicle_name = "ComputerVision";
-        cv_setting->vehicle_type = kVehicleTypeComputerVision;
-        vehicles[cv_setting->vehicle_name] = std::move(cv_setting);
+        if (simmode_name == "Multirotor") {
+            //create simple flight as default multirotor
+            auto simple_flight_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting());
+            simple_flight_setting->vehicle_name = "SimpleFlight";
+            simple_flight_setting->vehicle_type = kVehicleTypeSimpleFlight;
+            //TODO: we should be selecting remote if available else keyboard
+            //currently keyboard is not supported so use rc as default
+            simple_flight_setting->rc.remote_control_id = 0;
+            vehicles[simple_flight_setting->vehicle_name] = std::move(simple_flight_setting);
+        }
+        else if (simmode_name == "Car") {
+            //create default car vehicle
+            auto physx_car_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting());
+            physx_car_setting->vehicle_name = "PhysXCar";
+            physx_car_setting->vehicle_type = kVehicleTypePhysXCar;
+            vehicles[physx_car_setting->vehicle_name] = std::move(physx_car_setting);
+        }
+        else {
+            //create default computer vision vehicle
+            auto cv_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting());
+            cv_setting->vehicle_name = "ComputerVision";
+            cv_setting->vehicle_type = kVehicleTypeComputerVision;
+            vehicles[cv_setting->vehicle_name] = std::move(cv_setting);
+        }
     }
 
     static void loadVehicleSettings(const std::string& simmode_name, const Settings& settings_json,
         std::map<std::string, std::unique_ptr<VehicleSetting>>& vehicles)
     {
-        initializeVehicleSettings(vehicles);
+        initializeVehicleSettings(simmode_name, vehicles);
 
         msr::airlib::Settings vehicles_child;
         if (settings_json.getChild("Vehicles", vehicles_child)) {

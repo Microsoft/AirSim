@@ -168,7 +168,7 @@ void CarPawnSimApi::updateCarControls()
 void CarPawnSimApi::resetImplementation()
 {
 	setPose(UnityUtilities::Convert_to_Pose(GetInitialPose()), false);
-	Reset(getVehicleName().c_str());
+	Reset();
 
 	PawnSimApi::resetImplementation();
 	pawn_api_->reset();

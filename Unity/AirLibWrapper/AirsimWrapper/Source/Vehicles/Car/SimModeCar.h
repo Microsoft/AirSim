@@ -28,13 +28,13 @@ protected:
 		const PawnSimApi* sim_api) const override;
 
 public:
-	SimModeCar(std::string car_name, int port_number);
+	SimModeCar(int port_number);
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual bool isPaused() const override;
 	virtual void pause(bool is_paused) override;
 	virtual void continueForTime(double seconds) override;
-	virtual UnityPawn* GetVehiclePawn() override;
+	virtual UnityPawn* GetVehiclePawn(const std::string& vehicle_name) override;
 
 private:
 	std::atomic<float> current_clockspeed_;

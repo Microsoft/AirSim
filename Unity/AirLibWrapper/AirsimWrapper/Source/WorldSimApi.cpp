@@ -3,8 +3,8 @@
 #include "PInvokeWrapper.h"
 #include "UnityUtilities.hpp"
 
-WorldSimApi::WorldSimApi(SimModeBase* simmode, std::string vehicle_name)
-	: simmode_(simmode), vehicle_name_(vehicle_name)
+WorldSimApi::WorldSimApi(SimModeBase* simmode)
+	: simmode_(simmode)
 {}
 
 WorldSimApi::~WorldSimApi()
@@ -54,7 +54,7 @@ int WorldSimApi::getSegmentationObjectID(const std::string& mesh_name) const
 
 void WorldSimApi::printLogMessage(const std::string& message, const std::string& message_param, unsigned char severity)
 {
-	PrintLogMessage(message.c_str(), message_param.c_str(), vehicle_name_.c_str(), severity);
+	PrintLogMessage(message.c_str(), message_param.c_str(), "", severity);
 }
 
 std::unique_ptr<std::vector<std::string>> WorldSimApi::swapTextures(const std::string& tag, int tex_id, int component_id, int material_id)

@@ -5,8 +5,8 @@
 #include "../PInvokeWrapper.h"
 #include "../WorldSimApi.h"
 
-SimModeBase::SimModeBase(std::string vehicle_name, int port_number) :
-	vehicle_name_(vehicle_name), port_number_(port_number)
+SimModeBase::SimModeBase(int port_number) :
+	port_number_(port_number)
 {
 }
 
@@ -15,7 +15,7 @@ void SimModeBase::BeginPlay()
 	debug_reporter_.initialize(false);
 	debug_reporter_.reset();
 	global_ned_transform_.reset(new NedTransform(GetVehicleStartTransform()));
-	world_sim_api_.reset(new WorldSimApi(this, vehicle_name_));
+	world_sim_api_.reset(new WorldSimApi(this));
 	api_provider_.reset(new msr::airlib::ApiProvider(world_sim_api_.get()));
 	setupClockSpeed();
 	record_tick_count = 0;
@@ -24,7 +24,8 @@ void SimModeBase::BeginPlay()
 
 void SimModeBase::Tick(float DeltaSeconds)
 {
-	getVehicleSimApi(vehicle_name_)->pawnTick(DeltaSeconds);
+	for (auto& api : getApiProvider()->getVehicleSimApis())
+		static_cast<PawnSimApi*>(api)->pawnTick(DeltaSeconds);
 	showClockStats();
 	updateDebugReport(debug_reporter_);
 }
@@ -36,7 +37,7 @@ void SimModeBase::showClockStats()
 	{
 		PrintLogMessage("ClockSpeed config, actual: ", 
 			Utils::stringf("%f, %f", clock_speed, ClockFactory::get()->getTrueScaleWrtWallClock()).c_str(),
-			vehicle_name_.c_str(), ErrorLogSeverity::Information);
+			"", ErrorLogSeverity::Information);
 	}
 }
 
@@ -153,14 +154,14 @@ void SimModeBase::startApiServer()
 		api_server_ = createApiServer();
 #endif
 		try {
-			api_server_->start(false, 4); //TODO: set thread for vehicle count
+			api_server_->start(false, vehicle_sim_apis_.size() + 4); //TODO: set thread for vehicle count
 		}
 		catch (std::exception& ex) {
-			PrintLogMessage("Cannot start RpcLib Server", ex.what(), vehicle_name_.c_str(), ErrorLogSeverity::Error);
+			PrintLogMessage("Cannot start RpcLib Server", ex.what(), "", ErrorLogSeverity::Error);
 		}
 	}
 	else
-		PrintLogMessage("API server is disabled in settings", "", vehicle_name_.c_str(), ErrorLogSeverity::Information);
+		PrintLogMessage("API server is disabled in settings", "", "", ErrorLogSeverity::Information);
 
 }
 void SimModeBase::stopApiServer()
@@ -208,31 +209,35 @@ void SimModeBase::setupVehiclesAndCamera()
 {
 	//determine camera director camera default pose and spawn it
 	const auto& camera_director_setting = getSettings().camera_director;
-	UnityPawn* vehicle_pawn = GetVehiclePawn();
-	const auto& home_geopoint = msr::airlib::EarthUtils::nedToGeodetic(GetVehiclePosition(), getSettings().origin_geopoint);
+	for (auto const& vehicle_setting_pair : getSettings().vehicles) {
+		const auto& vehicle_setting = *vehicle_setting_pair.second;
+		const std::string& vehicle_name = vehicle_setting.vehicle_name;
 
-	PawnSimApi::Params pawn_sim_api_params(vehicle_pawn, &getGlobalNedTransform(), home_geopoint, vehicle_name_);
-	auto vehicle_sim_api = createVehicleSimApi(pawn_sim_api_params);
-	auto vehicle_sim_api_p = vehicle_sim_api.get();
-	auto vehicle_Api = getVehicleApi(pawn_sim_api_params, vehicle_sim_api_p);
+		UnityPawn* vehicle_pawn = GetVehiclePawn(vehicle_name);
+		const auto& home_geopoint = msr::airlib::EarthUtils::nedToGeodetic(GetVehiclePosition(vehicle_name), getSettings().origin_geopoint);
 
-	getApiProvider()->insert_or_assign(vehicle_name_, vehicle_Api, vehicle_sim_api_p);
+		PawnSimApi::Params pawn_sim_api_params(vehicle_pawn, &getGlobalNedTransform(), home_geopoint, vehicle_name);
+		auto vehicle_sim_api = createVehicleSimApi(pawn_sim_api_params);
+		auto vehicle_sim_api_p = vehicle_sim_api.get();
+		auto vehicle_Api = getVehicleApi(pawn_sim_api_params, vehicle_sim_api_p);
 
-	if ((!getApiProvider()->hasDefaultVehicle()) && vehicle_name_ != "")
-	{
-		getApiProvider()->makeDefaultVehicle(vehicle_name_);
+		getApiProvider()->insert_or_assign(vehicle_name, vehicle_Api, vehicle_sim_api_p);
+
+		if ((!getApiProvider()->hasDefaultVehicle()) && vehicle_name != "")
+			getApiProvider()->makeDefaultVehicle(vehicle_name);
+
+		vehicle_sim_apis_.push_back(std::move(vehicle_sim_api));
 	}
-	vehicle_sim_apis_.push_back(std::move(vehicle_sim_api));
 }
 
-const msr::airlib::Vector3r SimModeBase::GetVehiclePosition()
+const msr::airlib::Vector3r SimModeBase::GetVehiclePosition(const std::string& vehicle_name)
 {
-	AirSimPose airSimPose = GetPose(vehicle_name_.c_str());
+	AirSimPose airSimPose = GetPose(vehicle_name.c_str());
 	msr::airlib::Vector3r vehiclePosition(airSimPose.position.x, airSimPose.position.y, airSimPose.position.z);
 	return vehiclePosition;
 }
 
-UnityPawn* SimModeBase::GetVehiclePawn()
+UnityPawn* SimModeBase::GetVehiclePawn(const std::string& vehicle_name)
 {
 	return nullptr;
 }
@@ -261,6 +266,7 @@ msr::airlib::VehicleApiBase* SimModeBase::getVehicleApi(const PawnSimApi::Params
 
 UnityTransform SimModeBase::GetVehicleStartTransform()
 {
-	UnityTransform unityTransform = GetTransformFromUnity(vehicle_name_.c_str());
+	//can we just take origin in Unity here?
+	UnityTransform unityTransform;
 	return unityTransform;
 }

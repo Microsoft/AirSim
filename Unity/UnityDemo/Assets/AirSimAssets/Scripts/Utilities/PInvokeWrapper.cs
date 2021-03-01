@@ -27,15 +27,15 @@ namespace AirSimUnity {
         public static extern void StopDroneServer(string vehicleName);
 
         [DllImport(DLL_NAME)]
-        public static extern bool StartServer(string vehicleName, string simModeName, int portNumber);
+        public static extern bool StartServer(string simModeName, int portNumber);
 
         [DllImport(DLL_NAME)]
-        public static extern void StopServer(string vehicleName);
+        public static extern void StopServer();
 
         [DllImport(DLL_NAME)]
         public static extern void CallTick(float deltaSeconds);
 
         [DllImport(DLL_NAME)]
-        public static extern void InvokeCollisionDetection(CollisionInfo collisionInfo);
+        public static extern void InvokeCollisionDetection(string vehicleName, CollisionInfo collisionInfo);
     }
 }

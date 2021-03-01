@@ -6,14 +6,10 @@ namespace AirSimUnity
      */
     public interface IAirSimInterface
     {
-        bool StartVehicleServer(string hostIP);
-
-        void StopVehicleServer();
-
         KinemticState GetKinematicState();
 
         void InvokeTickInAirSim(float deltaSecond);
 
-        void InvokeCollisionDetectionInAirSim(CollisionInfo collisionInfo);
+        void InvokeCollisionDetectionInAirSim(string vehicleName, CollisionInfo collisionInfo);
     }
 }

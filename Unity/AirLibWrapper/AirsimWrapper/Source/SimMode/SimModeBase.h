@@ -21,7 +21,7 @@ protected:
 	typedef msr::airlib::AirSimSettings AirSimSettings;
 
 private:
-	const msr::airlib::Vector3r GetVehiclePosition();
+	const msr::airlib::Vector3r GetVehiclePosition(const std::string& vehicle_name);
 	UnityTransform GetVehicleStartTransform();
 	void showClockStats();
 
@@ -30,14 +30,14 @@ protected:
 	virtual bool isVehicleTypeSupported(const std::string& vehicle_type) const;
 	virtual std::unique_ptr<PawnSimApi> createVehicleSimApi(const PawnSimApi::Params& pawn_sim_api_params) const;
 	virtual msr::airlib::VehicleApiBase* getVehicleApi(const PawnSimApi::Params& pawn_sim_api_params, const PawnSimApi* sim_api) const;
-	virtual UnityPawn* GetVehiclePawn();
+	virtual UnityPawn* GetVehiclePawn(const std::string& vehicle_name);
 	virtual void setupVehiclesAndCamera();
 	virtual void setupClockSpeed(); //called when SimMode should handle clock speed setting
 	virtual void updateDebugReport(msr::airlib::StateReporterWrapper& debug_reporter);
 	virtual const msr::airlib::AirSimSettings& getSettings() const;
 
 public:
-	SimModeBase(std::string vehicle_name, int port_number);
+	SimModeBase(int port_number);
 	virtual void BeginPlay();
 	virtual void EndPlay();
 	virtual void Tick(float DeltaSeconds) = 0;
@@ -85,7 +85,6 @@ protected:
 	int record_tick_count;
 
 public:
-	std::string vehicle_name_;
 	int port_number_;
 	bool EnableReport = false;
 };

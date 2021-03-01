@@ -18,7 +18,7 @@ private:
 	std::string getSimModeFromUser();
 
 public:
-	SimHUD(std::string vehicle_name, std::string sime_mode_name, int port_number);
+	SimHUD(std::string sime_mode_name, int port_number);
 	SimModeBase* GetSimMode();
 	ImageType getSubwindowCameraType(int window_index);
 	void setSubwindowCameraType(int window_index, ImageType type);
@@ -31,7 +31,6 @@ public:
 private:
 	typedef common_utils::Utils Utils;
 	SimModeBase* simmode_;
-	std::string vehicle_name_;
 	std::string sim_mode_name_;
 	int port_number_;
 
