@@ -45,6 +45,72 @@ if ERRORLEVEL 1 (
   )
 )
 
+REM //---------- get PX4-ECL ----------
+IF NOT EXIST external\PX4-ECL mkdir external\PX4-ECL
+IF NOT EXIST external\PX4-ECL\PX4-ECL-0.9.0 (
+	REM //leave some blank lines because powershell shows download banner at top of console
+	ECHO(
+	ECHO(   
+	ECHO(   
+	ECHO *****************************************************************************************
+	ECHO Downloading PX4-ECL
+	ECHO *****************************************************************************************
+	@echo on
+	powershell -command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; iwr https://github.com/PX4/PX4-ECL/archive/v0.9.0.zip -OutFile external\PX4-ECL.zip }"
+	@echo off
+	
+	REM //remove any previous versions
+	rmdir external\PX4-ECL /q /s
+
+	powershell -command "& { Expand-Archive -Path external\PX4-ECL.zip -DestinationPath external\PX4-ECL }"
+	del external\PX4-ECL.zip /q
+	
+	REM //Don't fail the build if the high-poly car is unable to be downloaded
+	REM //Instead, just notify users that the gokart will be used.
+	IF NOT EXIST external\PX4-ECL\PX4-ECL-0.9.0 (
+		ECHO Unable to download PX4-ECL
+		goto :buildfailed
+	)
+)
+
+REM //---------- copy PX4-ECL binaries and include folder inside AirLib folder ----------
+set PX4_ECL_TARGET_LIB=AirLib\deps\ecl
+if NOT exist %PX4_ECL_TARGET_LIB% mkdir %PX4_ECL_TARGET_LIB%
+robocopy /MIR external\PX4-ECL\PX4-ECL-0.9.0 %PX4_ECL_TARGET_LIB%
+
+REM //---------- get PX4-Matrix ----------
+IF NOT EXIST external\matrix mkdir external\matrix
+IF NOT EXIST external\matrix\PX4-Matrix-1.0.2 (
+	REM //leave some blank lines because powershell shows download banner at top of console
+	ECHO(
+	ECHO(   
+	ECHO(   
+	ECHO *****************************************************************************************
+	ECHO Downloading PX4-Matrix
+	ECHO *****************************************************************************************
+	@echo on
+	powershell -command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; iwr https://github.com/PX4/PX4-Matrix/archive/v1.0.2.zip -OutFile external\matrix.zip }"
+	@echo off
+	
+	REM //remove any previous versions
+	rmdir external\matrix /q /s
+
+	powershell -command "& { Expand-Archive -Path external\matrix.zip -DestinationPath external\matrix }"
+	del external\matrix.zip /q
+	
+	REM //Don't fail the build if the high-poly car is unable to be downloaded
+	REM //Instead, just notify users that the gokart will be used.
+	IF NOT EXIST external\matrix\PX4-Matrix-1.0.2 (
+		ECHO Unable to download matrix
+		goto :buildfailed
+	)
+)
+
+REM //---------- copy PX4-Matrix folder inside AirLib folder ----------
+set PX4_ECL_TARGET_LIB=AirLib\deps\matrix
+if NOT exist %PX4_ECL_TARGET_LIB% mkdir %PX4_ECL_TARGET_LIB%
+robocopy /MIR external\matrix\PX4-Matrix-1.0.2 %PX4_ECL_TARGET_LIB%
+
 REM //---------- get rpclib ----------
 IF NOT EXIST external\rpclib mkdir external\rpclib
 IF NOT EXIST external\rpclib\rpclib-2.2.1 (
@@ -80,9 +146,9 @@ cd external\rpclib\rpclib-2.2.1\build
 cmake -G"Visual Studio 16 2019" ..
 
 if "%buildMode%" == "--Debug" (
-cmake --build . --config Debug
+cmake --build . --config Debug -DPOSIX_SHARED
 ) else if "%buildMode%" == "--Release" (
-cmake --build . --config Release
+cmake --build . --config Release -DPOSIX_SHARED
 ) else (
 cmake --build .
 cmake --build . --config Release

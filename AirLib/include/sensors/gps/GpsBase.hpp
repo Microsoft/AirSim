@@ -7,7 +7,7 @@
 
 #include "sensors/SensorBase.hpp"
 #include "common/CommonStructs.hpp"
-
+#include <EKF/ekf.h>
 
 namespace msr { namespace airlib {
 
@@ -123,6 +123,7 @@ protected:
 
 private: 
     Output output_;
+    std::shared_ptr<Ekf> _ekf;
 };
 
 }} //namespace
