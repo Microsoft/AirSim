@@ -1,9 +1,24 @@
+#!/bin/bash
 DOCKER_IMAGE_NAME=$1
 
 # get the base directory name of the unreal binary's shell script
 # we'll mount this volume while running docker container
 UNREAL_BINARY_PATH=$(dirname $(readlink -f $2))
 UNREAL_BINARY_SHELL_ABSPATH=$(readlink -f $2)
+
+# This is to determine Docker version for the command
+version_less_than_equal_to() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" = "$1"; }
+
+REQ_DOCKER_VERSION=19.03
+docker_version=$(docker -v | cut -d ' ' -f3 | sed 's/,$//')
+
+if version_less_than_equal_to $REQ_DOCKER_VERSION $docker_version; then
+    # Use the normal docker command
+    DOCKER_CMD="docker run --gpus all"
+else
+    # Use nvidia-docker
+    DOCKER_CMD="nvidia-docker run --runtime=nvidia"
+fi
 
 # this block is for running X apps in docker
 XAUTH=/tmp/.docker.xauth
@@ -46,7 +61,7 @@ done
 # now, let's mount the user directory which points to the unreal binary (UNREAL_BINARY_PATH)
 # set the environment varible SDL_VIDEODRIVER to SDL_VIDEODRIVER_VALUE
 # and tell the docker container to execute UNREAL_BINARY_COMMAND
-nvidia-docker run -it \
+$DOCKER_CMD -it \
     -v $(pwd)/settings.json:/home/airsim_user/Documents/AirSim/settings.json \
     -v $UNREAL_BINARY_PATH:$UNREAL_BINARY_PATH \
     -e SDL_VIDEODRIVER=$SDL_VIDEODRIVER_VALUE \
@@ -57,7 +72,6 @@ nvidia-docker run -it \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     -env="XAUTHORITY=$XAUTH" \
     --volume="$XAUTH:$XAUTH" \
-    --runtime=nvidia \
     --rm \
     $DOCKER_IMAGE_NAME \
     /bin/bash -c "$UNREAL_BINARY_COMMAND"
