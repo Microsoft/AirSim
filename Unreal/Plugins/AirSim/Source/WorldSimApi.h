@@ -15,6 +15,8 @@ public:
     typedef msr::airlib::Pose Pose;
     typedef msr::airlib::Vector3r Vector3r;
     typedef msr::airlib::MeshPositionVertexBuffersResponse MeshPositionVertexBuffersResponse;
+    typedef msr::airlib::ImageCaptureBase ImageCaptureBase;
+    typedef msr::airlib::CameraDetails CameraDetails;
 
     WorldSimApi(ASimModeBase* simmode);
     virtual ~WorldSimApi() = default;
@@ -73,6 +75,22 @@ public:
     virtual std::vector<std::string> listVehicles() const override;
 
     virtual std::string getSettingsString() const override;
+
+    // Camera APIs
+    virtual msr::airlib::CameraInfo getCameraInfo(const CameraDetails& camera_details) const override;
+    virtual void setCameraPose(const msr::airlib::Pose& pose, const CameraDetails& camera_details) override;
+    virtual void setCameraFoV(float fov_degrees, const CameraDetails& camera_details) override;
+    virtual void setDistortionParam(const std::string& param_name, float value, const CameraDetails& camera_details) override;
+    virtual std::vector<float> getDistortionParams(const CameraDetails& camera_details) const override;
+
+    virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& requests,
+                                                                   const std::string& vehicle_name, bool external) const override;
+    virtual std::vector<uint8_t> getImage(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details) const override;
+
+    virtual void addDetectionFilterMeshName(ImageCaptureBase::ImageType image_type, const std::string& mesh_name, const CameraDetails& camera_details) override;
+    virtual void setDetectionFilterRadius(ImageCaptureBase::ImageType image_type, float radius_cm, const CameraDetails& camera_details) override;
+    virtual void clearDetectionMeshNames(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details) override;
+    virtual std::vector<msr::airlib::DetectionInfo> getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details) override;
 
 private:
     AActor* createNewActor(const FActorSpawnParameters& spawn_params, const FTransform& actor_transform, const Vector3r& scale, UStaticMesh* static_mesh);

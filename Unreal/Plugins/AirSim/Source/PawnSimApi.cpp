@@ -130,9 +130,7 @@ void PawnSimApi::createCamerasFromSettings()
         const auto& setting = camera_setting_pair.second;
 
         //get pose
-        FVector position = transform.fromLocalNed(
-                               NedTransform::Vector3r(setting.position.x(), setting.position.y(), setting.position.z())) -
-                           transform.fromLocalNed(NedTransform::Vector3r(0.0, 0.0, 0.0));
+        FVector position = transform.fromLocalNed(setting.position) - transform.fromLocalNed(Vector3r::Zero());
         FTransform camera_transform(FRotator(setting.rotation.pitch, setting.rotation.yaw, setting.rotation.roll),
                                     position,
                                     FVector(1., 1., 1.));
@@ -184,27 +182,6 @@ const NedTransform& PawnSimApi::getNedTransform() const
 APawn* PawnSimApi::getPawn()
 {
     return params_.pawn;
-}
-
-std::vector<PawnSimApi::ImageCaptureBase::ImageResponse> PawnSimApi::getImages(
-    const std::vector<ImageCaptureBase::ImageRequest>& requests) const
-{
-    std::vector<ImageCaptureBase::ImageResponse> responses;
-
-    const ImageCaptureBase* camera = getImageCapture();
-    camera->getImages(requests, responses);
-
-    return responses;
-}
-
-std::vector<uint8_t> PawnSimApi::getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const
-{
-    std::vector<ImageCaptureBase::ImageRequest> request = { ImageCaptureBase::ImageRequest(camera_name, image_type) };
-    const std::vector<ImageCaptureBase::ImageResponse>& response = getImages(request);
-    if (response.size() > 0)
-        return response.at(0).image_data_uint8;
-    else
-        return std::vector<uint8_t>();
 }
 
 void PawnSimApi::setRCForceFeedback(float rumble_strength, float auto_center)
@@ -458,69 +435,6 @@ void PawnSimApi::reportState(msr::airlib::StateReporter& reporter)
     reporter.writeValue("unreal pos", Vector3r(unrealPosition.X, unrealPosition.Y, unrealPosition.Z));
 }
 
-void PawnSimApi::addDetectionFilterMeshName(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const std::string& mesh_name)
-{
-    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, image_type, mesh_name]() {
-        const APIPCamera* camera = getCamera(camera_name);
-        UDetectionComponent* detection_comp = camera->getDetectionComponent(image_type, false);
-
-        FString name = FString(mesh_name.c_str());
-
-        if (!detection_comp->object_filter_.wildcard_mesh_names_.Contains(name)) {
-            detection_comp->object_filter_.wildcard_mesh_names_.Add(name);
-        }
-    },
-                                             true);
-}
-
-void PawnSimApi::clearDetectionMeshNames(const std::string& camera_name, ImageCaptureBase::ImageType image_type)
-{
-    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, image_type]() {
-        const APIPCamera* camera = getCamera(camera_name);
-        camera->getDetectionComponent(image_type, false)->object_filter_.wildcard_mesh_names_.Empty();
-    },
-                                             true);
-}
-
-void PawnSimApi::setDetectionFilterRadius(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const float radius_cm)
-{
-    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, image_type, radius_cm]() {
-        const APIPCamera* camera = getCamera(camera_name);
-        camera->getDetectionComponent(image_type, false)->max_distance_to_camera_ = radius_cm;
-    },
-                                             true);
-}
-
-std::vector<PawnSimApi::DetectionInfo> PawnSimApi::getDetections(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const
-{
-    std::vector<msr::airlib::DetectionInfo> result;
-
-    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, image_type, &result]() {
-        const APIPCamera* camera = getCamera(camera_name);
-        const TArray<FDetectionInfo>& detections = camera->getDetectionComponent(image_type, false)->getDetections();
-        result.resize(detections.Num());
-
-        for (int i = 0; i < detections.Num(); i++) {
-            result[i].name = std::string(TCHAR_TO_UTF8(*(detections[i].Actor->GetFName().ToString())));
-
-            Vector3r nedWrtOrigin = ned_transform_.toGlobalNed(detections[i].Actor->GetActorLocation());
-            result[i].geo_point = msr::airlib::EarthUtils::nedToGeodetic(nedWrtOrigin,
-                                                                         AirSimSettings::singleton().origin_geopoint);
-
-            result[i].box2D.min = Vector2r(detections[i].Box2D.Min.X, detections[i].Box2D.Min.Y);
-            result[i].box2D.max = Vector2r(detections[i].Box2D.Max.X, detections[i].Box2D.Max.Y);
-
-            result[i].box3D.min = ned_transform_.toLocalNed(detections[i].Box3D.Min);
-            result[i].box3D.max = ned_transform_.toLocalNed(detections[i].Box3D.Max);
-
-            result[i].relative_pose = toPose(detections[i].RelativeTransform.GetTranslation(), detections[i].RelativeTransform.GetRotation());
-        }
-    },
-                                             true);
-
-    return result;
-}
-
 //void playBack()
 //{
 //if (params_.pawn->GetRootPrimitiveComponent()->IsAnySimulatingPhysics()) {
@@ -597,62 +511,6 @@ void PawnSimApi::plot(std::istream& s, FColor color, const Vector3r& offset)
         }
         last_point = current_point;
     }
-}
-
-msr::airlib::CameraInfo PawnSimApi::getCameraInfo(const std::string& camera_name) const
-{
-    msr::airlib::CameraInfo camera_info;
-
-    const APIPCamera* camera = getCamera(camera_name);
-    camera_info.pose.position = ned_transform_.toLocalNed(camera->GetActorLocation());
-    camera_info.pose.orientation = ned_transform_.toNed(camera->GetActorRotation().Quaternion());
-    camera_info.fov = camera->GetCameraComponent()->FieldOfView;
-    camera_info.proj_mat = camera->getProjectionMatrix(APIPCamera::ImageType::Scene);
-    return camera_info;
-}
-
-void PawnSimApi::setCameraPose(const std::string& camera_name, const msr::airlib::Pose& pose)
-{
-    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, pose]() {
-        APIPCamera* camera = getCamera(camera_name);
-        FTransform pose_unreal = ned_transform_.fromRelativeNed(pose);
-        camera->setCameraPose(pose_unreal);
-    },
-                                             true);
-}
-
-void PawnSimApi::setCameraFoV(const std::string& camera_name, float fov_degrees)
-{
-    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, fov_degrees]() {
-        APIPCamera* camera = getCamera(camera_name);
-        camera->setCameraFoV(fov_degrees);
-    },
-                                             true);
-}
-
-void PawnSimApi::setDistortionParam(const std::string& camera_name, const std::string& param_name, float value)
-{
-    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, param_name, value]() {
-        APIPCamera* camera = getCamera(camera_name);
-        camera->distortion_param_instance_->SetScalarParameterValue(FName(param_name.c_str()), value);
-    },
-                                             true);
-}
-
-std::vector<float> PawnSimApi::getDistortionParams(const std::string& camera_name)
-{
-    std::vector<float> param_values(5, 0.0);
-    UAirBlueprintLib::RunCommandOnGameThread([this, camera_name, &param_values]() {
-        APIPCamera* camera = getCamera(camera_name);
-        camera->distortion_param_instance_->GetScalarParameterValue(FName(TEXT("K1")), param_values[0]);
-        camera->distortion_param_instance_->GetScalarParameterValue(FName(TEXT("K2")), param_values[1]);
-        camera->distortion_param_instance_->GetScalarParameterValue(FName(TEXT("K3")), param_values[2]);
-        camera->distortion_param_instance_->GetScalarParameterValue(FName(TEXT("P1")), param_values[3]);
-        camera->distortion_param_instance_->GetScalarParameterValue(FName(TEXT("P2")), param_values[4]);
-    },
-                                             true);
-
-    return param_values;
 }
 
 //parameters in NED frame

@@ -5,7 +5,7 @@ import numpy as np
 import pprint
 
 # connect to the AirSim simulator
-client = airsim.MultirotorClient()
+client = airsim.VehicleClient()
 client.confirmConnection()
 
 # set camera name and image type to request images and detections

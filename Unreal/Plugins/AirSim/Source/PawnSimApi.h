@@ -53,18 +53,18 @@ public: //types
         }
 
         Params(APawn* pawn_val, const NedTransform* global_transform_val, PawnEvents* pawn_events_val,
-               const common_utils::UniqueValueMap<std::string, APIPCamera*> cameras_val, UClass* pip_camera_class_val,
-               UParticleSystem* collision_display_template_val, const msr::airlib::GeoPoint home_geopoint_val,
-               std::string vehicle_name_val)
+               const common_utils::UniqueValueMap<std::string, APIPCamera*>& cameras_val, UClass* pip_camera_class_val,
+               UParticleSystem* collision_display_template_val, const msr::airlib::GeoPoint& home_geopoint_val,
+               const std::string& vehicle_name_val)
+            : pawn(pawn_val)
+            , global_transform(global_transform_val)
+            , pawn_events(pawn_events_val)
+            , cameras(cameras_val)
+            , pip_camera_class(pip_camera_class_val)
+            , collision_display_template(collision_display_template_val)
+            , home_geopoint(home_geopoint_val)
+            , vehicle_name(vehicle_name_val)
         {
-            pawn = pawn_val;
-            global_transform = global_transform_val;
-            pawn_events = pawn_events_val;
-            cameras = cameras_val;
-            pip_camera_class = pip_camera_class_val;
-            collision_display_template = collision_display_template_val;
-            home_geopoint = home_geopoint_val;
-            vehicle_name = vehicle_name_val;
         }
     };
 
@@ -75,15 +75,8 @@ public: //implementation of VehicleSimApiBase
     virtual void update() override;
 
     virtual const UnrealImageCapture* getImageCapture() const override;
-    virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& request) const override;
-    virtual std::vector<uint8_t> getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const override;
     virtual Pose getPose() const override;
     virtual void setPose(const Pose& pose, bool ignore_collision) override;
-    virtual msr::airlib::CameraInfo getCameraInfo(const std::string& camera_name) const override;
-    virtual void setCameraPose(const std::string& camera_name, const Pose& pose) override;
-    virtual void setCameraFoV(const std::string& camera_name, float fov_degrees) override;
-    virtual void setDistortionParam(const std::string& camera_name, const std::string& param_name, float value) override;
-    virtual std::vector<float> getDistortionParams(const std::string& camera_name) override;
 
     virtual CollisionInfo getCollisionInfo() const override;
     virtual int getRemoteControlID() const override;
@@ -101,11 +94,6 @@ public: //implementation of VehicleSimApiBase
     virtual const msr::airlib::Environment* getGroundTruthEnvironment() const override;
     virtual std::string getRecordFileLine(bool is_header_line) const override;
     virtual void reportState(msr::airlib::StateReporter& reporter) override;
-
-    virtual void addDetectionFilterMeshName(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const std::string& mesh_name) override;
-    virtual void setDetectionFilterRadius(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const float radius_cm) override;
-    virtual void clearDetectionMeshNames(const std::string& camera_name, ImageCaptureBase::ImageType image_type) override;
-    virtual std::vector<DetectionInfo> getDetections(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const override;
 
 protected: //additional interface for derived class
     virtual void pawnTick(float dt);

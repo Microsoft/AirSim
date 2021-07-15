@@ -186,3 +186,22 @@ FRotator UDetectionComponent::getRelativeRotation(FVector in_location, FRotator 
     FTransform relative_object_transform = camera_transform.GetRelativeTransform(FTransform(in_rotation, in_location));
     return relative_object_transform.Rotator();
 }
+
+void UDetectionComponent::addMeshName(const std::string& mesh_name)
+{
+    FString name(mesh_name.c_str());
+
+    if (!object_filter_.wildcard_mesh_names_.Contains(name)) {
+        object_filter_.wildcard_mesh_names_.Add(name);
+    }
+}
+
+void UDetectionComponent::setFilterRadius(const float radius_cm)
+{
+    max_distance_to_camera_ = radius_cm;
+}
+
+void UDetectionComponent::clearMeshNames()
+{
+    object_filter_.wildcard_mesh_names_.Empty();
+}

@@ -172,6 +172,11 @@ camera_pose = airsim.Pose(airsim.Vector3r(0, 0, 0), airsim.to_quaternion(0.26179
 client.simSetCameraPose(0, camera_pose);
 ```
 
+- `simSetCameraFov` allows changing the Field-of-View of the camera at runtime.
+- `simSetDistortionParams`, `simGetDistortionParams` allow setting and fetching the distortion parameters K1, K2, K3, P1, P2
+
+All Camera APIs take in 3 common parameters apart from the API-specific ones, `camera_name`(str), `vehicle_name`(str) and `external`(bool, to indicate [External Camera](settings.md#external-cameras)). Camera and vehicle name is used to get the specific camera, if `external` is set to `true`, then the vehicle name is ignored. Also see [external_camera.py](https://github.com/microsoft/AirSim/blob/master/PythonClient/computer_vision/external_camera.py) for example usage of these APIs.
+
 ### Gimbal
 You can set stabilization for pitch, roll or yaw for any camera [using settings](settings.md#gimbal).
 

@@ -29,7 +29,6 @@ public:
     typedef msr::airlib::Utils Utils;
     typedef msr::airlib::AirSimSettings::VehicleSetting VehicleSetting;
     typedef msr::airlib::ImageCaptureBase ImageCaptureBase;
-    typedef msr::airlib::DetectionInfo DetectionInfo;
 
 public:
     struct Params
@@ -70,15 +69,10 @@ public:
     virtual void resetImplementation() override;
     virtual void update() override;
     virtual const UnityImageCapture* getImageCapture() const override;
-    virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& request) const override;
-    virtual std::vector<uint8_t> getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const override;
+
     virtual Pose getPose() const override;
     virtual void setPose(const Pose& pose, bool ignore_collision) override;
-    virtual msr::airlib::CameraInfo getCameraInfo(const std::string& camera_name) const override;
-    virtual void setCameraPose(const std::string& camera_name, const Pose& pose) override;
-    virtual void setCameraFoV(const std::string& camera_name, float fov_degrees) override;
-    virtual void setDistortionParam(const std::string& camera_name, const std::string& param_name, float value) override;
-    virtual std::vector<float> getDistortionParams(const std::string& camera_name) override;
+
     virtual CollisionInfo getCollisionInfo() const override;
     virtual int getRemoteControlID() const override;
     virtual msr::airlib::RCData getRCData() const override;
@@ -97,11 +91,6 @@ public:
     void OnCollision(msr::airlib::CollisionInfo collisionInfo);
     const NedTransform& getNedTransform() const;
     virtual void pawnTick(float dt);
-
-    virtual void addDetectionFilterMeshName(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const std::string& mesh_name) override;
-    virtual void setDetectionFilterRadius(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const float radius_cm) override;
-    virtual void clearDetectionMeshNames(const std::string& camera_name, ImageCaptureBase::ImageType image_type) override;
-    virtual std::vector<DetectionInfo> getDetections(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const override;
 
     virtual bool testLineOfSightToPoint(const msr::airlib::GeoPoint& point) const override;
     virtual bool testLineOfSightBetweenPoints(const msr::airlib::GeoPoint& point1, const msr::airlib::GeoPoint& point2) const override;

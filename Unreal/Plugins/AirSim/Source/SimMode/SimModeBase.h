@@ -15,6 +15,7 @@
 #include "PawnSimApi.h"
 #include "common/StateReporterWrapper.hpp"
 #include "LoadingScreenWidget.h"
+#include "UnrealImageCapture.h"
 #include "SimModeBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLevelLoaded);
@@ -92,6 +93,31 @@ public:
         return static_cast<PawnSimApi*>(api_provider_->getVehicleSimApi(vehicle_name));
     }
 
+    const APIPCamera* getExternalCamera(const std::string& camera_name) const
+    {
+        return external_cameras_.findOrDefault(camera_name, nullptr);
+    }
+
+    APIPCamera* getExternalCamera(const std::string& camera_name)
+    {
+        return const_cast<APIPCamera*>(
+            static_cast<const ASimModeBase*>(this)->getExternalCamera(camera_name));
+    }
+
+    const APIPCamera* getCamera(const msr::airlib::CameraDetails& camera_details) const;
+
+    APIPCamera* getCamera(const msr::airlib::CameraDetails& camera_details)
+    {
+        return const_cast<APIPCamera*>(static_cast<const ASimModeBase*>(this)->getCamera(camera_details));
+    }
+
+    const UnrealImageCapture* getExternalImageCapture() const
+    {
+        return external_image_capture_.get();
+    }
+
+    const UnrealImageCapture* getImageCapture(const std::string& vehicle_name = "", bool external = false) const;
+
     TMap<FString, FAssetData> asset_map;
     TMap<FString, AActor*> scene_object_map;
 
@@ -121,9 +147,10 @@ protected: //optional overrides
     void initializeCameraDirector(const FTransform& camera_transform, float follow_distance);
     void checkVehicleReady(); //checks if vehicle is available to use
     virtual void updateDebugReport(msr::airlib::StateReporterWrapper& debug_reporter);
+    virtual void initializeExternalCameras();
 
 protected: //Utility methods for derived classes
-    virtual const msr::airlib::AirSimSettings& getSettings() const;
+    virtual const AirSimSettings& getSettings() const;
     FRotator toFRotator(const AirSimSettings::Rotation& rotation, const FRotator& default_val);
 
 protected:
@@ -174,6 +201,8 @@ private:
     msr::airlib::StateReporterWrapper debug_reporter_;
 
     std::vector<std::unique_ptr<msr::airlib::VehicleSimApiBase>> vehicle_sim_apis_;
+    common_utils::UniqueValueMap<std::string, APIPCamera*> external_cameras_;
+    std::unique_ptr<UnrealImageCapture> external_image_capture_;
 
     UPROPERTY()
     TArray<AActor*> spawned_actors_; //keep refs alive from Unreal GC

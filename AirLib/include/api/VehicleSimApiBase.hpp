@@ -49,9 +49,6 @@ namespace airlib
 
         virtual void initialize() = 0;
 
-        virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& request) const = 0;
-        virtual std::vector<uint8_t> getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const = 0;
-
         virtual bool testLineOfSightToPoint(const GeoPoint& point) const = 0;
         virtual bool testLineOfSightBetweenPoints(const GeoPoint& point1, const GeoPoint& point2) const = 0;
         virtual void getWorldExtents(GeoPoint& min, GeoPoint& max) const = 0;
@@ -61,12 +58,6 @@ namespace airlib
         virtual const Kinematics::State* getGroundTruthKinematics() const = 0;
         virtual const msr::airlib::Environment* getGroundTruthEnvironment() const = 0;
 
-        virtual CameraInfo getCameraInfo(const std::string& camera_name) const = 0;
-        virtual void setCameraPose(const std::string& camera_name, const Pose& pose) = 0;
-        virtual void setCameraFoV(const std::string& camera_name, float fov_degrees) = 0;
-        virtual void setDistortionParam(const std::string& camera_name, const std::string& param_name, float value) = 0;
-        virtual std::vector<float> getDistortionParams(const std::string& camera_name) = 0;
-
         virtual CollisionInfo getCollisionInfo() const = 0;
         virtual int getRemoteControlID() const = 0; //which RC to use, 0 is first one, -1 means disable RC (use keyborad)
         virtual RCData getRCData() const = 0; //get reading from RC from simulator's host OS
@@ -74,11 +65,6 @@ namespace airlib
         virtual std::string getRecordFileLine(bool is_header_line) const = 0;
         virtual void toggleTrace() = 0;
         virtual void setTraceLine(const std::vector<float>& color_rgba, float thickness) = 0;
-
-        virtual void addDetectionFilterMeshName(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const std::string& mesh_name) = 0;
-        virtual void setDetectionFilterRadius(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const float radius_cm) = 0;
-        virtual void clearDetectionMeshNames(const std::string& camera_name, ImageCaptureBase::ImageType image_type) = 0;
-        virtual std::vector<DetectionInfo> getDetections(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const = 0;
 
         //use pointer here because of derived classes for VehicleSetting
         const AirSimSettings::VehicleSetting* getVehicleSetting() const

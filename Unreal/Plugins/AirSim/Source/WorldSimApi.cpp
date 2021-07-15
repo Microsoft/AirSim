@@ -627,3 +627,145 @@ std::string WorldSimApi::getSettingsString() const
 {
     return msr::airlib::AirSimSettings::singleton().settings_text_;
 }
+
+msr::airlib::CameraInfo WorldSimApi::getCameraInfo(const CameraDetails& camera_details) const
+{
+    msr::airlib::CameraInfo info;
+    const APIPCamera* camera = simmode_->getCamera(camera_details);
+    UAirBlueprintLib::RunCommandOnGameThread([camera, &info]() {
+        info = camera->getCameraInfo();
+    },
+                                             true);
+
+    return info;
+}
+
+void WorldSimApi::setCameraPose(const msr::airlib::Pose& pose, const CameraDetails& camera_details)
+{
+    APIPCamera* camera = simmode_->getCamera(camera_details);
+    UAirBlueprintLib::RunCommandOnGameThread([camera, &pose]() {
+        camera->setCameraPose(pose);
+    },
+                                             true);
+}
+
+void WorldSimApi::setCameraFoV(float fov_degrees, const CameraDetails& camera_details)
+{
+    APIPCamera* camera = simmode_->getCamera(camera_details);
+    UAirBlueprintLib::RunCommandOnGameThread([camera, &fov_degrees]() {
+        camera->setCameraFoV(fov_degrees);
+    },
+                                             true);
+}
+
+void WorldSimApi::setDistortionParam(const std::string& param_name, float value, const CameraDetails& camera_details)
+{
+    APIPCamera* camera = simmode_->getCamera(camera_details);
+    UAirBlueprintLib::RunCommandOnGameThread([camera, &param_name, &value]() {
+        camera->setDistortionParam(param_name, value);
+    },
+                                             true);
+}
+
+std::vector<float> WorldSimApi::getDistortionParams(const CameraDetails& camera_details) const
+{
+    std::vector<float> param_values;
+    const APIPCamera* camera = simmode_->getCamera(camera_details);
+    UAirBlueprintLib::RunCommandOnGameThread([camera, &param_values]() {
+        param_values = camera->getDistortionParams();
+    },
+                                             true);
+
+    return param_values;
+}
+
+std::vector<WorldSimApi::ImageCaptureBase::ImageResponse> WorldSimApi::getImages(
+    const std::vector<ImageCaptureBase::ImageRequest>& requests, const std::string& vehicle_name, bool external) const
+{
+    std::vector<ImageCaptureBase::ImageResponse> responses;
+
+    const UnrealImageCapture* camera = simmode_->getImageCapture(vehicle_name, external);
+    camera->getImages(requests, responses);
+
+    return responses;
+}
+
+std::vector<uint8_t> WorldSimApi::getImage(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details) const
+{
+    std::vector<ImageCaptureBase::ImageRequest> request{
+        ImageCaptureBase::ImageRequest(camera_details.camera_name, image_type)
+    };
+
+    const auto& response = getImages(request, camera_details.vehicle_name, camera_details.external);
+    if (response.size() > 0)
+        return response.at(0).image_data_uint8;
+    else
+        return std::vector<uint8_t>();
+}
+
+void WorldSimApi::addDetectionFilterMeshName(ImageCaptureBase::ImageType image_type, const std::string& mesh_name, const CameraDetails& camera_details)
+{
+    const APIPCamera* camera = simmode_->getCamera(camera_details);
+
+    UAirBlueprintLib::RunCommandOnGameThread([camera, image_type, &mesh_name]() {
+        camera->getDetectionComponent(image_type, false)->addMeshName(mesh_name);
+    },
+                                             true);
+}
+
+void WorldSimApi::setDetectionFilterRadius(ImageCaptureBase::ImageType image_type, float radius_cm, const CameraDetails& camera_details)
+{
+    const APIPCamera* camera = simmode_->getCamera(camera_details);
+
+    UAirBlueprintLib::RunCommandOnGameThread([camera, image_type, radius_cm]() {
+        camera->getDetectionComponent(image_type, false)->setFilterRadius(radius_cm);
+    },
+                                             true);
+}
+
+void WorldSimApi::clearDetectionMeshNames(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details)
+{
+    const APIPCamera* camera = simmode_->getCamera(camera_details);
+
+    UAirBlueprintLib::RunCommandOnGameThread([camera, image_type]() {
+        camera->getDetectionComponent(image_type, false)->clearMeshNames();
+    },
+                                             true);
+}
+
+std::vector<msr::airlib::DetectionInfo> WorldSimApi::getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details)
+{
+    std::vector<msr::airlib::DetectionInfo> result;
+
+    const APIPCamera* camera = simmode_->getCamera(camera_details);
+    const NedTransform& ned_transform = camera_details.external
+                                            ? simmode_->getGlobalNedTransform()
+                                            : simmode_->getVehicleSimApi(camera_details.vehicle_name)->getNedTransform();
+
+    UAirBlueprintLib::RunCommandOnGameThread([camera, image_type, &result, &ned_transform]() {
+        const TArray<FDetectionInfo>& detections = camera->getDetectionComponent(image_type, false)->getDetections();
+        result.resize(detections.Num());
+
+        for (int i = 0; i < detections.Num(); i++) {
+            result[i].name = std::string(TCHAR_TO_UTF8(*(detections[i].Actor->GetFName().ToString())));
+
+            Vector3r nedWrtOrigin = ned_transform.toGlobalNed(detections[i].Actor->GetActorLocation());
+            result[i].geo_point = msr::airlib::EarthUtils::nedToGeodetic(nedWrtOrigin,
+                                                                         AirSimSettings::singleton().origin_geopoint);
+
+            result[i].box2D.min = Vector2r(detections[i].Box2D.Min.X, detections[i].Box2D.Min.Y);
+            result[i].box2D.max = Vector2r(detections[i].Box2D.Max.X, detections[i].Box2D.Max.Y);
+
+            result[i].box3D.min = ned_transform.toLocalNed(detections[i].Box3D.Min);
+            result[i].box3D.max = ned_transform.toLocalNed(detections[i].Box3D.Max);
+
+            const Vector3r& position = ned_transform.toLocalNed(detections[i].RelativeTransform.GetTranslation());
+            const Quaternionr& orientation = ned_transform.toNed(detections[i].RelativeTransform.GetRotation());
+
+            result[i].relative_pose = Pose(position, orientation);
+        }
+    },
+                                             true);
+
+    return result;
+}

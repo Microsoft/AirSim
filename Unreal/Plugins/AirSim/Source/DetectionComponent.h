@@ -44,6 +44,10 @@ public:
 
     const TArray<FDetectionInfo>& getDetections();
 
+    void addMeshName(const std::string& mesh_name);
+    void setFilterRadius(const float radius_cm);
+    void clearMeshNames();
+
 private:
     bool calcBoundingFromViewInfo(AActor* actor, FBox2D& box_out);
 
@@ -53,15 +57,15 @@ private:
 
 public:
     UPROPERTY()
+    UTextureRenderTarget2D* texture_target_;
+
+private:
+    UPROPERTY()
     FObjectFilter object_filter_;
 
     UPROPERTY(EditAnywhere, Category = "Tracked Actors")
     float max_distance_to_camera_;
 
-    UPROPERTY()
-    UTextureRenderTarget2D* texture_target_;
-
-private:
     UPROPERTY()
     USceneCaptureComponent2D* scene_capture_component_2D_;
 

@@ -132,9 +132,9 @@ Below are complete list of settings available along with their default values. I
     "UpdateIntervalSecs": 60
   },
   "SubWindows": [
-    {"WindowID": 0, "CameraName": "0", "ImageType": 3, "VehicleName": "", "Visible": false},
-    {"WindowID": 1, "CameraName": "0", "ImageType": 5, "VehicleName": "", "Visible": false},
-    {"WindowID": 2, "CameraName": "0", "ImageType": 0, "VehicleName": "", "Visible": false}
+    {"WindowID": 0, "CameraName": "0", "ImageType": 3, "VehicleName": "", "Visible": false, "External": false},
+    {"WindowID": 1, "CameraName": "0", "ImageType": 5, "VehicleName": "", "Visible": false, "External": false},
+    {"WindowID": 2, "CameraName": "0", "ImageType": 0, "VehicleName": "", "Visible": false, "External": false}
   ],
   "SegmentationSettings": {
     "InitMethod": "",
@@ -188,6 +188,14 @@ Below are complete list of settings available along with their default values. I
       "X": NaN, "Y": NaN, "Z": NaN,
       "Pitch": NaN, "Roll": NaN, "Yaw": NaN
     }
+  },
+  "ExternalCameras": {
+    "FixedCamera1": {
+        // same elements as in CameraDefaults above
+    },
+    "FixedCamera2": {
+        // same elements as in CameraDefaults above
+    }
   }
 }
 ```
@@ -218,7 +226,13 @@ Also see [Time of Day API](apis.md#time-of-day-api).
 This setting specifies the latitude, longitude and altitude of the Player Start component placed in the Unreal environment. The vehicle's home point is computed using this transformation. Note that all coordinates exposed via APIs are using NED system in SI units which means each vehicle starts at (0, 0, 0) in NED system. Time of Day settings are computed for geographical coordinates specified in `OriginGeopoint`.
 
 ## SubWindows
-This setting determines what is shown in each of 3 subwindows which are visible when you press 0,1,2 keys. The `WindowID` can be 0 to 2, `CameraName` is any [available camera](image_apis.md#available_cameras) on the vehicle. `ImageType` integer value determines what kind of image gets shown according to [ImageType enum](image_apis.md#available-imagetype). `VehicleName` string allows you to specify the vehicle to use the camera from, used when multiple vehicles are specified in the settings. First vehicle's camera will be used if there are any mistakes such as incorrect vehicle name, or only a single vehicle.
+This setting determines what is shown in each of 3 subwindows which are visible when you press 1,2,3 keys. 
+
+* `WindowID`: Can be 0 to 2
+* `CameraName` is any [available camera](image_apis.md#available_cameras) on the vehicle.
+* `ImageType` integer value determines what kind of image gets shown according to [ImageType enum](image_apis.md#available-imagetype).
+* `VehicleName` string allows you to specify the vehicle to use the camera from, used when multiple vehicles are specified in the settings. First vehicle's camera will be used if there are any mistakes such as incorrect vehicle name, or only a single vehicle.
+* `External`: Set it to `true` if the camera is an external camera. If true, then the `VehicleName` parameter is ignored
 
 For example, for a single car vehicle, below shows driver view, front bumper view and rear view as scene, depth and surface normals respectively.
 ```json
@@ -329,6 +343,9 @@ This adds fluctuations on horizontal line.
 
 ### Gimbal
 The `Gimbal` element allows to freeze camera orientation for pitch, roll and/or yaw. This setting is ignored unless `ImageType` is -1. The `Stabilization` is defaulted to 0 meaning no gimbal i.e. camera orientation changes with body orientation on all axis. The value of 1 means full stabilization. The value between 0 to 1 acts as a weight for fixed angles specified (in degrees, in world-frame) in `Pitch`, `Roll` and `Yaw` elements and orientation of the vehicle body. When any of the angles is omitted from json or set to NaN, that angle is not stabilized (i.e. it moves along with vehicle body).
+
+## External Cameras
+This element allows specifying cameras which are separate from the cameras attached to the vehicle, such as a CCTV camera. These are fixed cameras, and don't move along with the vehicles. The key in the element is the name of the camera, and the value i.e. settings are the same as `CameraDefaults` described above. All the camera APIs work with external cameras, including capturing images, changing the pose, etc by passing the parameter `external=True` in the API call.
 
 ## Vehicles Settings
 Each simulation mode will go through the list of vehicles specified in this setting and create the ones that has `"AutoCreate": true`. Each vehicle specified in this setting has key which becomes the name of the vehicle. If `"Vehicles"` element is missing then this list is populated with default car named "PhysXCar" and default multirotor named "SimpleFlight".

@@ -332,22 +332,13 @@ void ASimHUD::initializeSubWindows()
             subwindow_cameras_[0] = subwindow_cameras_[1] = subwindow_cameras_[2] = nullptr;
     }
 
-    for (size_t window_index = 0; window_index < AirSimSettings::kSubwindowCount; ++window_index) {
-
-        const auto& subwindow_setting = AirSimSettings::singleton().subwindow_settings.at(window_index);
-        auto vehicle_sim_api = simmode_->getVehicleSimApi(subwindow_setting.vehicle_name);
-
-        if (vehicle_sim_api) {
-            if (vehicle_sim_api->getCamera(subwindow_setting.camera_name) != nullptr)
-                subwindow_cameras_[subwindow_setting.window_index] = vehicle_sim_api->getCamera(subwindow_setting.camera_name);
-            else
-                UAirBlueprintLib::LogMessageString("CameraID in <SubWindows> element in settings.json is invalid",
-                                                   std::to_string(window_index),
-                                                   LogDebugLevel::Failure);
-        }
+    for (const auto& setting : getSubWindowSettings()) {
+        APIPCamera* camera = simmode_->getCamera(msr::airlib::CameraDetails(setting.camera_name, setting.vehicle_name, setting.external));
+        if (camera)
+            subwindow_cameras_[setting.window_index] = camera;
         else
-            UAirBlueprintLib::LogMessageString("Vehicle in <SubWindows> element in settings.json is invalid",
-                                               std::to_string(window_index),
+            UAirBlueprintLib::LogMessageString("Invalid Camera settings in <SubWindows> element",
+                                               std::to_string(setting.window_index),
                                                LogDebugLevel::Failure);
     }
 }

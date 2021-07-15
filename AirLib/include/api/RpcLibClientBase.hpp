@@ -74,10 +74,10 @@ namespace airlib
         int simGetSegmentationObjectID(const std::string& mesh_name) const;
         void simPrintLogMessage(const std::string& message, std::string message_param = "", unsigned char severity = 0);
 
-        void simAddDetectionFilterMeshName(const std::string& camera_name, const std::string& mesh_name, const std::string& vehicle_name = "");
-        void simSetDetectionFilterRadius(const std::string& camera_name, const float radius_cm, const std::string& vehicle_name = "");
-        void simClearDetectionMeshNames(const std::string& camera_name, const std::string& vehicle_name = "");
-        vector<DetectionInfo> simGetDetections(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const std::string& vehicle_name = "");
+        void simAddDetectionFilterMeshName(const std::string& camera_name, const std::string& mesh_name, const std::string& vehicle_name = "", bool external = false);
+        void simSetDetectionFilterRadius(const std::string& camera_name, const float radius_cm, const std::string& vehicle_name = "", bool external = false);
+        void simClearDetectionMeshNames(const std::string& camera_name, const std::string& vehicle_name = "", bool external = false);
+        vector<DetectionInfo> simGetDetections(const std::string& camera_name, ImageCaptureBase::ImageType image_type, const std::string& vehicle_name = "", bool external = false);
 
         void simFlushPersistentMarkers();
         void simPlotPoints(const vector<Vector3r>& points, const vector<float>& color_rgba, float size, float duration, bool is_persistent);
@@ -108,8 +108,8 @@ namespace airlib
         void simSetVehiclePose(const Pose& pose, bool ignore_collision, const std::string& vehicle_name = "");
         void simSetTraceLine(const std::vector<float>& color_rgba, float thickness = 3.0f, const std::string& vehicle_name = "");
 
-        vector<ImageCaptureBase::ImageResponse> simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name = "");
-        vector<uint8_t> simGetImage(const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name = "");
+        vector<ImageCaptureBase::ImageResponse> simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name = "", bool external = false);
+        vector<uint8_t> simGetImage(const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name = "", bool external = false);
 
         bool simTestLineOfSightToPoint(const msr::airlib::GeoPoint& point, const std::string& vehicle_name = "");
         bool simTestLineOfSightBetweenPoints(const msr::airlib::GeoPoint& point1, const msr::airlib::GeoPoint& point2);
@@ -120,13 +120,12 @@ namespace airlib
 
         CollisionInfo simGetCollisionInfo(const std::string& vehicle_name = "") const;
 
-        CameraInfo simGetCameraInfo(const std::string& camera_name, const std::string& vehicle_name = "") const;
-        void simSetDistortionParam(const std::string& camera_name, const std::string& param_name, float value, const std::string& vehicle_name = "");
-        std::vector<float> simGetDistortionParams(const std::string& camera_name, const std::string& vehicle_name = "");
-        void simSetCameraPose(const std::string& camera_name, const Pose& pose, const std::string& vehicle_name = "");
-        void simSetCameraFov(const std::string& camera_name, float fov_degrees, const std::string& vehicle_name = "");
-        // This is a backwards-compatibility wrapper over simSetCameraPose, and can be removed in future major releases
-        void simSetCameraOrientation(const std::string& camera_name, const Quaternionr& orientation, const std::string& vehicle_name = "");
+        CameraInfo simGetCameraInfo(const std::string& camera_name, const std::string& vehicle_name = "", bool external = false) const;
+        void simSetDistortionParam(const std::string& camera_name, const std::string& param_name, float value, const std::string& vehicle_name = "", bool external = false);
+        std::vector<float> simGetDistortionParams(const std::string& camera_name, const std::string& vehicle_name = "", bool external = false);
+        void simSetCameraPose(const std::string& camera_name, const Pose& pose, const std::string& vehicle_name = "", bool external = false);
+        void simSetCameraFov(const std::string& camera_name, float fov_degrees, const std::string& vehicle_name = "", bool external = false);
+
         bool simCreateVoxelGrid(const Vector3r& position, const int& x_size, const int& y_size, const int& z_size, const float& res, const std::string& output_file);
         msr::airlib::Kinematics::State simGetGroundTruthKinematics(const std::string& vehicle_name = "") const;
         msr::airlib::Environment::State simGetGroundTruthEnvironment(const std::string& vehicle_name = "") const;
@@ -152,4 +151,5 @@ namespace airlib
     };
 }
 } //namespace
+
 #endif

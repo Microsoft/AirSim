@@ -243,4 +243,111 @@ std::string WorldSimApi::getSettingsString() const
     return msr::airlib::AirSimSettings::singleton().settings_text_;
 }
 
+msr::airlib::CameraInfo WorldSimApi::getCameraInfo(const CameraDetails& camera_details) const
+{
+    if (camera_details.external)
+        throw std::invalid_argument(common_utils::Utils::stringf("external field is not supported on Unity Image APIs").c_str());
+
+    AirSimCameraInfo airsim_camera_info = GetCameraInfo(camera_details.camera_name.c_str(), camera_details.vehicle_name.c_str()); // Into Unity
+    msr::airlib::CameraInfo camera_info;
+    camera_info.pose = UnityUtilities::Convert_to_Pose(airsim_camera_info.pose);
+    camera_info.fov = airsim_camera_info.fov;
+    return camera_info;
+}
+
+void WorldSimApi::setCameraPose(const msr::airlib::Pose& pose, const CameraDetails& camera_details)
+{
+    if (camera_details.external)
+        throw std::invalid_argument(common_utils::Utils::stringf("external field is not supported on Unity Image APIs").c_str());
+
+    SetCameraPose(camera_details.camera_name.c_str(), UnityUtilities::Convert_to_AirSimPose(pose), camera_details.vehicle_name.c_str());
+}
+
+void WorldSimApi::setCameraFoV(float fov_degrees, const CameraDetails& camera_details)
+{
+    if (camera_details.external)
+        throw std::invalid_argument(common_utils::Utils::stringf("external field is not supported on Unity Image APIs").c_str());
+
+    SetCameraFoV(camera_details.camera_name.c_str(), fov_degrees, camera_details.vehicle_name.c_str());
+}
+
+void WorldSimApi::setDistortionParam(const std::string& param_name, float value, const CameraDetails& camera_details)
+{
+    throw std::invalid_argument(common_utils::Utils::stringf("setDistortionParam is not supported on unity").c_str());
+}
+
+std::vector<float> WorldSimApi::getDistortionParams(const CameraDetails& camera_details) const
+{
+    throw std::invalid_argument(common_utils::Utils::stringf("getDistortionParams is not supported on unity").c_str());
+
+    std::vector<float> params(5, 0.0);
+    return params;
+}
+
+std::vector<WorldSimApi::ImageCaptureBase::ImageResponse> WorldSimApi::getImages(
+    const std::vector<ImageCaptureBase::ImageRequest>& requests, const std::string& vehicle_name, bool external) const
+{
+    std::vector<ImageCaptureBase::ImageResponse> responses;
+    const ImageCaptureBase* camera = simmode_->getVehicleSimApi(vehicle_name)->getImageCapture();
+    camera->getImages(requests, responses);
+    return responses;
+}
+
+std::vector<uint8_t> WorldSimApi::getImage(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details) const
+{
+    std::vector<ImageCaptureBase::ImageRequest> request{
+        ImageCaptureBase::ImageRequest(camera_details.camera_name, image_type)
+    };
+
+    const auto& response = getImages(request, camera_details.vehicle_name, camera_details.external);
+    if (response.size() > 0)
+        return response.at(0).image_data_uint8;
+    else
+        return std::vector<uint8_t>();
+}
+
+void WorldSimApi::addDetectionFilterMeshName(ImageCaptureBase::ImageType image_type, const std::string& mesh_name, const CameraDetails& camera_details)
+{
+    unused(camera_details);
+    unused(image_type);
+    unused(mesh_name);
+
+    throw std::invalid_argument(common_utils::Utils::stringf(
+                                    "addDetectionFilterMeshName is not supported on unity")
+                                    .c_str());
+}
+
+void WorldSimApi::setDetectionFilterRadius(ImageCaptureBase::ImageType image_type, float radius_cm, const CameraDetails& camera_details)
+{
+    unused(camera_details);
+    unused(image_type);
+    unused(radius_cm);
+
+    throw std::invalid_argument(common_utils::Utils::stringf(
+                                    "setDetectionFilterRadius is not supported on unity")
+                                    .c_str());
+}
+
+void WorldSimApi::clearDetectionMeshNames(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details)
+{
+    unused(camera_details);
+    unused(image_type);
+
+    throw std::invalid_argument(common_utils::Utils::stringf(
+                                    "clearDetectionMeshNames is not supported on unity")
+                                    .c_str());
+}
+
+std::vector<msr::airlib::DetectionInfo> WorldSimApi::getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details)
+{
+    unused(camera_details);
+    unused(image_type);
+
+    throw std::invalid_argument(common_utils::Utils::stringf(
+                                    "getDetections is not supported on unity")
+                                    .c_str());
+
+    return std::vector<msr::airlib::DetectionInfo>();
+}
+
 #pragma endregion

@@ -5,7 +5,7 @@
 #define air_WorldSimApiBase_hpp
 
 #include "common/CommonStructs.hpp"
-#include "common/AirSimSettings.hpp"
+#include "common/ImageCaptureBase.hpp"
 
 namespace msr
 {
@@ -85,7 +85,24 @@ namespace airlib
         virtual vector<string> listVehicles() const = 0;
 
         virtual std::string getSettingsString() const = 0;
+
+        // Camera APIs
+        virtual CameraInfo getCameraInfo(const CameraDetails& camera_details) const = 0;
+        virtual void setCameraPose(const msr::airlib::Pose& pose, const CameraDetails& camera_details) = 0;
+        virtual void setCameraFoV(float fov_degrees, const CameraDetails& camera_details) = 0;
+        virtual void setDistortionParam(const std::string& param_name, float value, const CameraDetails& camera_details) = 0;
+        virtual std::vector<float> getDistortionParams(const CameraDetails& camera_details) const = 0;
+
+        virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& requests,
+                                                                       const std::string& vehicle_name, bool external) const = 0;
+        virtual std::vector<uint8_t> getImage(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details) const = 0;
+
+        virtual void addDetectionFilterMeshName(ImageCaptureBase::ImageType image_type, const std::string& mesh_name, const CameraDetails& camera_details) = 0;
+        virtual void setDetectionFilterRadius(ImageCaptureBase::ImageType image_type, float radius_cm, const CameraDetails& camera_details) = 0;
+        virtual void clearDetectionMeshNames(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details) = 0;
+        virtual std::vector<DetectionInfo> getDetections(ImageCaptureBase::ImageType image_type, const CameraDetails& camera_details) = 0;
     };
 }
 } //namespace
+
 #endif
