@@ -52,6 +52,25 @@ namespace airlib
         virtual std::vector<ImageCaptureBase::ImageResponse> getImages(const std::vector<ImageCaptureBase::ImageRequest>& request) const = 0;
         virtual std::vector<uint8_t> getImage(const std::string& camera_name, ImageCaptureBase::ImageType image_type) const = 0;
 
+        //CinemAirSim
+        virtual std::vector<std::string> getPresetLensSettings() = 0;
+        virtual std::string getLensSettings() = 0;
+        virtual void setPresetLensSettings(std::string) = 0;
+        virtual std::vector<std::string> getPresetFilmbackSettings() = 0;
+        virtual void setPresetFilmbackSettings(std::string) = 0;
+        virtual std::string getFilmbackSettings() = 0;
+        virtual float setFilmbackSettings(float width, float height) = 0;
+        virtual float getFocalLength() = 0;
+        virtual void setFocalLength(float focal_length) = 0;
+        virtual void enableManualFocus(bool enable) = 0;
+        virtual float getFocusDistance() = 0;
+        virtual void setFocusDistance(float focus_distance) = 0;
+        virtual float getFocusAperture() = 0;
+        virtual void setFocusAperture(float focus_aperture) = 0;
+        virtual void enableFocusPlane(bool enable) = 0;
+        virtual std::string getCurrentFieldOfView() = 0;
+        //end CinemAirSim
+
         virtual bool testLineOfSightToPoint(const GeoPoint& point) const = 0;
 
         virtual Pose getPose() const = 0;

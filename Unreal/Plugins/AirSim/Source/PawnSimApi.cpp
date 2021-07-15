@@ -207,6 +207,88 @@ std::vector<uint8_t> PawnSimApi::getImage(const std::string& camera_name, ImageC
         return std::vector<uint8_t>();
 }
 
+//CinemAirSim
+std::vector<std::string> PawnSimApi::getPresetLensSettings()
+{
+    return getCamera("")->getPresetLensSettings();
+}
+
+std::string PawnSimApi::getLensSettings()
+{
+    return getCamera("")->getLensSettings();
+}
+
+void PawnSimApi::setPresetLensSettings(std::string preset)
+{
+    return getCamera("")->setPresetLensSettings(preset);
+}
+
+std::vector<std::string> PawnSimApi::getPresetFilmbackSettings()
+{
+    return getCamera("")->getPresetFilmbackSettings();
+}
+
+void PawnSimApi::setPresetFilmbackSettings(std::string preset)
+{
+    return getCamera("")->setPresetFilmbackSettings(preset);
+}
+
+std::string PawnSimApi::getFilmbackSettings()
+{
+    return getCamera("")->getFilmbackSettings();
+}
+
+float PawnSimApi::setFilmbackSettings(float width, float height)
+{
+    return getCamera("")->setFilmbackSettings(width, height);
+}
+
+float PawnSimApi::getFocalLength()
+{
+    return getCamera("")->getFocalLength();
+}
+
+void PawnSimApi::setFocalLength(float focal_length)
+{
+    return getCamera("")->setFocalLength(focal_length);
+}
+
+void PawnSimApi::enableManualFocus(bool enable)
+{
+    return getCamera("")->enableManualFocus(enable);
+}
+
+float PawnSimApi::getFocusDistance()
+{
+    return getCamera("")->getFocusDistance();
+}
+
+void PawnSimApi::setFocusDistance(float focus_distance)
+{
+    return getCamera("")->setFocusDistance(focus_distance);
+}
+
+float PawnSimApi::getFocusAperture()
+{
+    return getCamera("")->getFocusAperture();
+}
+
+void PawnSimApi::setFocusAperture(float focus_aperture)
+{
+    return getCamera("")->setFocusAperture(focus_aperture);
+}
+
+void PawnSimApi::enableFocusPlane(bool enable)
+{
+    return getCamera("")->enableFocusPlane(enable);
+}
+
+std::string PawnSimApi::getCurrentFieldOfView()
+{
+    return getCamera("")->getCurrentFieldOfView();
+}
+//End CinemAirSim
+
 void PawnSimApi::setRCForceFeedback(float rumble_strength, float auto_center)
 {
     if (joystick_state_.is_initialized) {

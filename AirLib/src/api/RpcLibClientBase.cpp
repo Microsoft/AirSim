@@ -270,6 +270,106 @@ __pragma(warning(disable : 4239))
             return result;
         }
 
+        //CinemAirSim
+        std::vector<std::string> RpcLibClientBase::simGetPresetLensSettings(const std::string& vehicle_name)
+        {
+            vector<std::string> result = pimpl_->client.call("simGetPresetLensSettings", vehicle_name).as<vector<std::string>>();
+
+            if (result.size() == 1) {
+                // rpclib has a bug with serializing empty vectors, so we return a 1 byte vector instead.
+                result.clear();
+            }
+            return result;
+        }
+
+        std::string RpcLibClientBase::simGetLensSettings(const std::string& vehicle_name)
+        {
+            std::string result = pimpl_->client.call("simGetLensSettings", vehicle_name).as<std::string>();
+            return result;
+        }
+
+        void RpcLibClientBase::simSetPresetLensSettings(const std::string& preset_lens_settings, const std::string& vehicle_name)
+        {
+            pimpl_->client.call("simSetPresetLensSettings", preset_lens_settings, vehicle_name);
+        }
+
+        std::vector<std::string> RpcLibClientBase::simGetPresetFilmbackSettings(const std::string& vehicle_name)
+        {
+            vector<std::string> result = pimpl_->client.call("simGetPresetFilmbackSettings", vehicle_name).as<vector<std::string>>();
+
+            if (result.size() == 1) {
+                // rpclib has a bug with serializing empty vectors, so we return a 1 byte vector instead.
+                result.clear();
+            }
+            return result;
+        }
+
+        void RpcLibClientBase::simSetPresetFilmbackSettings(const std::string& preset_filmback_settings, const std::string& vehicle_name)
+        {
+            pimpl_->client.call("simSetPresetFilmbackSettings", preset_filmback_settings, vehicle_name);
+        }
+
+        std::string RpcLibClientBase::simGetFilmbackSettings(const std::string& vehicle_name)
+        {
+            std::string result = pimpl_->client.call("simGetFilmbackSettings", vehicle_name).as<std::string>();
+            return result;
+        }
+
+        float RpcLibClientBase::simSetFilmbackSettings(const float sensor_width, const float sensor_height, const std::string& vehicle_name)
+        {
+            float result = pimpl_->client.call("simSetFilmbackSettings", sensor_width, sensor_height, vehicle_name).as<float>();
+            return result;
+        }
+
+        float RpcLibClientBase::simGetFocalLength(const std::string& vehicle_name)
+        {
+            float result = pimpl_->client.call("simGetFocalLength", vehicle_name).as<float>();
+            return result;
+        }
+
+        void RpcLibClientBase::simSetFocalLength(const float focal_length, const std::string& vehicle_name)
+        {
+            pimpl_->client.call("simSetFocalLength", focal_length, vehicle_name);
+        }
+
+        void RpcLibClientBase::simEnableManualFocus(const bool enable, const std::string& vehicle_name)
+        {
+            pimpl_->client.call("simEnableManualFocus", enable, vehicle_name);
+        }
+
+        float RpcLibClientBase::simGetFocusDistance(const std::string& vehicle_name)
+        {
+            float result = pimpl_->client.call("simGetFocusDistance", vehicle_name).as<float>();
+            return result;
+        }
+        void RpcLibClientBase::simSetFocusDistance(const float focus_distance, const std::string& vehicle_name)
+        {
+            pimpl_->client.call("simSetFocusDistance", focus_distance, vehicle_name);
+        }
+
+        float RpcLibClientBase::simGetFocusAperture(const std::string& vehicle_name)
+        {
+            float result = pimpl_->client.call("simGetFocusAperture", vehicle_name).as<float>();
+            return result;
+        }
+
+        void RpcLibClientBase::simSetFocusAperture(const float focus_aperture, const std::string& vehicle_name)
+        {
+            pimpl_->client.call("simSetFocusAperture", focus_aperture, vehicle_name);
+        }
+
+        void RpcLibClientBase::simEnableFocusPlane(const bool enable, const std::string& vehicle_name)
+        {
+            pimpl_->client.call("simEnableFocusPlane", enable, vehicle_name);
+        }
+
+        std::string RpcLibClientBase::simGetCurrentFieldOfView(const std::string& vehicle_name)
+        {
+            std::string result = pimpl_->client.call("simGetCurrentFieldOfView", vehicle_name).as<std::string>();
+            return result;
+        }
+        //End CinemAirSim
+
         // Minor TODO: consider msgpack magic for GeoPoint, so we can have one arg instead of three
         bool RpcLibClientBase::simTestLineOfSightToPoint(const msr::airlib::GeoPoint& point, const std::string& vehicle_name)
         {

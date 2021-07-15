@@ -153,6 +153,86 @@ namespace airlib
             return getVehicleSimApi(vehicle_name)->getImage(camera_name, type);
         });
 
+        //CinemAirSim
+        pimpl_->server.bind("simGetPresetLensSettings", [&](const std::string& vehicle_name) -> vector<string> {
+            auto result = getVehicleSimApi(vehicle_name)->getPresetLensSettings();
+            if (result.size() == 0) {
+                // rpclib has a bug with serializing empty vectors, so we return a 1 byte vector instead.
+                result.push_back("");
+            }
+            return result;
+        });
+
+        pimpl_->server.bind("simGetLensSettings", [&](const std::string& vehicle_name) -> string {
+            auto result = getVehicleSimApi(vehicle_name)->getLensSettings();
+            return result;
+        });
+
+        pimpl_->server.bind("simSetPresetLensSettings", [&](const std::string preset_lens_settings, const std::string& vehicle_name) -> void {
+            getVehicleSimApi(vehicle_name)->setPresetLensSettings(preset_lens_settings);
+        });
+
+        pimpl_->server.bind("simGetPresetFilmbackSettings", [&](const std::string& vehicle_name) -> vector<string> {
+            auto result = getVehicleSimApi(vehicle_name)->getPresetFilmbackSettings();
+            if (result.size() == 0) {
+                // rpclib has a bug with serializing empty vectors, so we return a 1 byte vector instead.
+                result.push_back("");
+            }
+            return result;
+        });
+
+        pimpl_->server.bind("simSetPresetFilmbackSettings", [&](const std::string preset_filmback_settings, const std::string& vehicle_name) -> void {
+            getVehicleSimApi(vehicle_name)->setPresetFilmbackSettings(preset_filmback_settings);
+        });
+
+        pimpl_->server.bind("simGetFilmbackSettings", [&](const std::string& vehicle_name) -> string {
+            auto result = getVehicleSimApi(vehicle_name)->getFilmbackSettings();
+            return result;
+        });
+
+        pimpl_->server.bind("simSetFilmbackSettings", [&](const float width, const float heigth, const std::string& vehicle_name) -> float {
+            auto result = getVehicleSimApi(vehicle_name)->setFilmbackSettings(width, heigth);
+            return result;
+        });
+
+        pimpl_->server.bind("simGetFocalLength", [&](const std::string& vehicle_name) -> float {
+            return getVehicleSimApi(vehicle_name)->getFocalLength();
+        });
+
+        pimpl_->server.bind("simSetFocalLength", [&](const float focal_lenght, const std::string& vehicle_name) -> void {
+            getVehicleSimApi(vehicle_name)->setFocalLength(focal_lenght);
+        });
+
+        pimpl_->server.bind("simEnableManualFocus", [&](const bool enable, const std::string& vehicle_name) -> void {
+            getVehicleSimApi(vehicle_name)->enableManualFocus(enable);
+        });
+
+        pimpl_->server.bind("simGetFocusDistance", [&](const std::string& vehicle_name) -> float {
+            return getVehicleSimApi(vehicle_name)->getFocusDistance();
+        });
+
+        pimpl_->server.bind("simSetFocusDistance", [&](const float focus_distance, const std::string& vehicle_name) -> void {
+            getVehicleSimApi(vehicle_name)->setFocusDistance(focus_distance);
+        });
+
+        pimpl_->server.bind("simGetFocusAperture", [&](const std::string& vehicle_name) -> float {
+            return getVehicleSimApi(vehicle_name)->getFocusAperture();
+        });
+
+        pimpl_->server.bind("simSetFocusAperture", [&](const float focus_aperture, const std::string& vehicle_name) -> void {
+            getVehicleSimApi(vehicle_name)->setFocusAperture(focus_aperture);
+        });
+
+        pimpl_->server.bind("simEnableFocusPlane", [&](const bool enable, const std::string& vehicle_name) -> void {
+            getVehicleSimApi(vehicle_name)->enableFocusPlane(enable);
+        });
+
+        pimpl_->server.bind("simGetCurrentFieldOfView", [&](const std::string& vehicle_name) -> string {
+            auto result = getVehicleSimApi(vehicle_name)->getCurrentFieldOfView();
+            return result;
+        });
+        //end CinemAirSim
+
         pimpl_->server.bind("simTestLineOfSightToPoint", [&](const RpcLibAdaptorsBase::GeoPoint& point, const std::string& vehicle_name) -> bool {
             return getVehicleSimApi(vehicle_name)->testLineOfSightToPoint(point.to());
         });

@@ -111,6 +111,25 @@ namespace airlib
         vector<ImageCaptureBase::ImageResponse> simGetImages(vector<ImageCaptureBase::ImageRequest> request, const std::string& vehicle_name = "");
         vector<uint8_t> simGetImage(const std::string& camera_name, ImageCaptureBase::ImageType type, const std::string& vehicle_name = "");
 
+        //CinemAirSim
+        std::vector<std::string> simGetPresetLensSettings(const std::string& vehicle_name = "");
+        std::string simGetLensSettings(const std::string& vehicle_name = "");
+        void simSetPresetLensSettings(const std::string& preset_lens_settings = "", const std::string& vehicle_name = "");
+        std::vector<std::string> simGetPresetFilmbackSettings(const std::string& vehicle_name = "");
+        void simSetPresetFilmbackSettings(const std::string& preset_filmback_settings = "", const std::string& vehicle_name = "");
+        std::string simGetFilmbackSettings(const std::string& vehicle_name = "");
+        float simSetFilmbackSettings(const float sensor_width, const float sensor_heigth, const std::string& vehicle_name = "");
+        float simGetFocalLength(const std::string& vehicle_name = "");
+        void simSetFocalLength(float focal_length, const std::string& vehicle_name = "");
+        void simEnableManualFocus(const bool enable, const std::string& vehicle_name = "");
+        float simGetFocusDistance(const std::string& vehicle_name = "");
+        void simSetFocusDistance(float focus_distance, const std::string& vehicle_name = "");
+        float simGetFocusAperture(const std::string& vehicle_name = "");
+        void simSetFocusAperture(const float focus_aperture, const std::string& vehicle_name = "");
+        void simEnableFocusPlane(const bool enable, const std::string& vehicle_name = "");
+        std::string simGetCurrentFieldOfView(const std::string& vehicle_name = "");
+        //end CinemAirSim
+
         bool simTestLineOfSightToPoint(const msr::airlib::GeoPoint& point, const std::string& vehicle_name = "");
         bool simTestLineOfSightBetweenPoints(const msr::airlib::GeoPoint& point1, const msr::airlib::GeoPoint& point2);
         vector<msr::airlib::GeoPoint> simGetWorldExtents();
