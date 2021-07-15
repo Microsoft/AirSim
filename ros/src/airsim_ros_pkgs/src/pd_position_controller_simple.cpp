@@ -54,12 +54,19 @@ void PIDPositionController::initialize_ros()
     // ROS params
     double update_control_every_n_sec;
     nh_private_.getParam("update_control_every_n_sec", update_control_every_n_sec);
+    
+    std::string vehicle_name;
+
+    while(vehicle_name == "") {
+        nh_private_.getParam("/vehicle_name", vehicle_name);
+        ROS_INFO_STREAM("Waiting vehicle name");
+    }
 
     // ROS publishers
-    airsim_vel_cmd_world_frame_pub_ = nh_private_.advertise<airsim_ros_pkgs::VelCmd>("/vel_cmd_world_frame", 1);
+    airsim_vel_cmd_world_frame_pub_ = nh_private_.advertise<airsim_ros_pkgs::VelCmd>("/airsim_node/" + vehicle_name + "/vel_cmd_world_frame", 1);
 
     // ROS subscribers
-    airsim_odom_sub_ = nh_.subscribe("/airsim_node/odom_local_ned", 50, &PIDPositionController::airsim_odom_cb, this);
+    airsim_odom_sub_ = nh_.subscribe("/airsim_node/" + vehicle_name + "/odom_local_ned", 50, &PIDPositionController::airsim_odom_cb, this);
     home_geopoint_sub_ = nh_.subscribe("/airsim_node/home_geo_point", 50, &PIDPositionController::home_geopoint_cb, this);
     // todo publish this under global nodehandle / "airsim node" and hide it from user
     local_position_goal_srvr_ = nh_.advertiseService("/airsim_node/local_position_goal", &PIDPositionController::local_position_goal_srv_cb, this);

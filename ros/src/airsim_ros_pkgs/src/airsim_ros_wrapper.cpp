@@ -127,6 +127,9 @@ void AirsimROSWrapper::create_ros_pubs_from_settings_json()
     for (const auto& curr_vehicle_elem : AirSimSettings::singleton().vehicles) {
         auto& vehicle_setting = curr_vehicle_elem.second;
         auto curr_vehicle_name = curr_vehicle_elem.first;
+        
+        nh_.setParam("/vehicle_name",curr_vehicle_name);
+        
         set_nans_to_zeros_in_pose(*vehicle_setting);
 
         std::unique_ptr<VehicleROS> vehicle_ros = nullptr;
@@ -283,7 +286,7 @@ void AirsimROSWrapper::create_ros_pubs_from_settings_json()
         vel_cmd_all_world_frame_sub_ = nh_private_.subscribe("all_robots/vel_cmd_world_frame", 1, &AirsimROSWrapper::vel_cmd_all_world_frame_cb, this);
 
         vel_cmd_group_body_frame_sub_ = nh_private_.subscribe("group_of_robots/vel_cmd_body_frame", 1, &AirsimROSWrapper::vel_cmd_group_body_frame_cb, this);
-        vel_cmd_group_world_frame_sub_ = nh_private_.subscribe("group_of_obots/vel_cmd_world_frame", 1, &AirsimROSWrapper::vel_cmd_group_world_frame_cb, this);
+        vel_cmd_group_world_frame_sub_ = nh_private_.subscribe("group_of_robots/vel_cmd_world_frame", 1, &AirsimROSWrapper::vel_cmd_group_world_frame_cb, this);
 
         takeoff_group_srvr_ = nh_private_.advertiseService("group_of_robots/takeoff", &AirsimROSWrapper::takeoff_group_srv_cb, this);
         land_group_srvr_ = nh_private_.advertiseService("group_of_robots/land", &AirsimROSWrapper::land_group_srv_cb, this);
