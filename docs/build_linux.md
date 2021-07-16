@@ -56,6 +56,9 @@ cd AirSim
 # use ./build.sh --debug to build in debug mode
 ```
 
+## Cross-compile AirSim from Windows for Linux
+You can cross compile for Linux from a Windows machine. First install clang as instructed [here](https://docs.unrealengine.com/latest/INT/Platforms/Linux/GettingStarted/index.html). Then, build AirSim from Bash for Windows, as instructed above, such that the Linux .lib files are created. Subsequently, build AirSim again but this time for Windows (as instructed [here](build_windows.md)) such that you can open the project in UE4. After building UE4 for Windows, open the project in Unreal Engine. Under Project Settings, go to `Supported Platforms` and enable `Linux` by clicking the checkbox. Now, go to `Plugins` and search for `VR`. Disable `Oculus VR` and `SteamVR` as they will result in build errors. Now, you can start packaging the project by going to File &rarr; Package Projct &rarr; Linux &rarr; Linux.
+
 ### Build Unreal Environment
 
 Finally, you will need an Unreal project that hosts the environment for your vehicles. AirSim comes with a built-in "Blocks Environment" which you can use, or you can create your own. Please see [setting up Unreal Environment](unreal_proj.md) if you'd like to setup your own environment.
@@ -107,9 +110,6 @@ Alternatively, you can use [APIs](apis.md) for programmatic control or use the s
 
 - How do I use an IDE on Linux?
     * You can use Qt Creator or CodeLite. Instructions for Qt Creator are available [here](https://docs.unrealengine.com/en-US/SharingAndReleasing/Linux/BeginnerLinuxDeveloper/SettingUpQtCreator/index.html).
-
-- Can I cross compile for Linux from a Windows machine?
-    * Yes, you can, but we haven't tested it. You can find the instructions [here](https://docs.unrealengine.com/latest/INT/Platforms/Linux/GettingStarted/index.html).
 
 - What compiler and stdlib does AirSim use?
     * We use the same compiler that Unreal Engine uses, **Clang 8**, and stdlib, **libc++**. AirSim's `setup.sh` will automatically download them.
