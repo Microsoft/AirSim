@@ -180,7 +180,7 @@ void ASimModeBase::setStencilIDs()
 
     if (getSettings().segmentation_setting.init_method ==
         AirSimSettings::SegmentationSetting::InitMethodType::CommonObjectsRandomIDs) {
-        UAirBlueprintLib::InitializeMeshStencilIDs(!getSettings().segmentation_setting.override_existing);
+        UAirBlueprintLib::InitializeMeshStencilIDs(getSettings().segmentation_setting.override_existing);
     }
     //else don't init
 }

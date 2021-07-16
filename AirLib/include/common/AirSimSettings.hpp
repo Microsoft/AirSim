@@ -946,7 +946,7 @@ namespace airlib
                     //TODO: below exception doesn't actually get raised right now because of issue in Unreal Engine?
                     throw std::invalid_argument(std::string("SegmentationSetting init_method has invalid value in settings_json ") + init_method);
 
-                segmentation_setting.override_existing = json_parent.getBool("OverrideExisting", false);
+                segmentation_setting.override_existing = json_parent.getBool("OverrideExisting", true);
 
                 std::string mesh_naming_method = Utils::toLower(json_parent.getString("MeshNamingMethod", ""));
                 if (mesh_naming_method == "" || mesh_naming_method == "ownername")

@@ -139,7 +139,7 @@ Below are complete list of settings available along with their default values. I
   "SegmentationSettings": {
     "InitMethod": "",
     "MeshNamingMethod": "",
-    "OverrideExisting": false
+    "OverrideExisting": true
   },
   "PawnPaths": {
     "BareboneCar": {"PawnBP": "Class'/AirSim/VehicleAdv/Vehicle/VehicleAdvPawn.VehicleAdvPawn_C'"},

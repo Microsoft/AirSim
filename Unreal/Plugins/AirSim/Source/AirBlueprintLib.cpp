@@ -354,20 +354,20 @@ std::string UAirBlueprintLib::GetMeshName(ALandscapeProxy* mesh)
     return std::string(TCHAR_TO_UTF8(*(mesh->GetName())));
 }
 
-void UAirBlueprintLib::InitializeMeshStencilIDs(bool ignore_existing)
+void UAirBlueprintLib::InitializeMeshStencilIDs(bool override_existing)
 {
     for (TObjectIterator<UStaticMeshComponent> comp; comp; ++comp) {
-        InitializeObjectStencilID(*comp, ignore_existing);
+        InitializeObjectStencilID(*comp, override_existing);
     }
     for (TObjectIterator<USkinnedMeshComponent> comp; comp; ++comp) {
-        InitializeObjectStencilID(*comp, ignore_existing);
+        InitializeObjectStencilID(*comp, override_existing);
     }
     //for (TObjectIterator<UFoliageType> comp; comp; ++comp)
     //{
     //    InitializeObjectStencilID(*comp);
     //}
     for (TObjectIterator<ALandscapeProxy> comp; comp; ++comp) {
-        InitializeObjectStencilID(*comp, ignore_existing);
+        InitializeObjectStencilID(*comp, override_existing);
     }
 }
 
