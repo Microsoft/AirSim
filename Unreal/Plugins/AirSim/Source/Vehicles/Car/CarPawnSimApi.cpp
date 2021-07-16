@@ -167,4 +167,11 @@ void CarPawnSimApi::update()
     PawnSimApi::update();
 }
 
+void CarPawnSimApi::reportState(StateReporter& reporter)
+{
+    PawnSimApi::reportState(reporter);
+
+    vehicle_api_->reportState(reporter);
+}
+
 //*** End: UpdatableState implementation ***//

@@ -532,14 +532,7 @@ void ASimModeBase::updateDebugReport(msr::airlib::StateReporterWrapper& debug_re
 
             reporter.writeHeading(std::string("Vehicle: ").append(vehicle_name == "" ? "(default)" : vehicle_name));
 
-            const msr::airlib::Kinematics::State* kinematics = vehicle_sim_api->getGroundTruthKinematics();
-
-            reporter.writeValue("Position", kinematics->pose.position);
-            reporter.writeValue("Orientation", kinematics->pose.orientation);
-            reporter.writeValue("Lin-Vel", kinematics->twist.linear);
-            reporter.writeValue("Lin-Accl", kinematics->accelerations.linear);
-            reporter.writeValue("Ang-Vel", kinematics->twist.angular);
-            reporter.writeValue("Ang-Accl", kinematics->accelerations.angular);
+            vehicle_sim_api->reportState(reporter);
         }
     }
 }

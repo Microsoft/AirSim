@@ -31,6 +31,7 @@ public:
                   const msr::airlib::CarApiBase::CarControls& keyboard_controls, UWheeledVehicleMovementComponent* movement);
 
     virtual void update() override;
+    virtual void reportState(StateReporter& reporter) override;
 
     virtual std::string getRecordFileLine(bool is_header_line) const override;
 
