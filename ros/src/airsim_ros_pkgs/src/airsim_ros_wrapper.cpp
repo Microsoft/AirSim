@@ -3,6 +3,7 @@
 // #include <pluginlib/class_list_macros.h>
 // PLUGINLIB_EXPORT_CLASS(AirsimROSWrapper, nodelet::Nodelet)
 #include "common/AirSimSettings.hpp"
+#include "airsim_settings_parser.h"
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 
 constexpr char AirsimROSWrapper::CAM_YML_NAME[];
@@ -26,44 +27,42 @@ const std::unordered_map<int, std::string> AirsimROSWrapper::image_type_int_to_s
 };
 
 AirsimROSWrapper::AirsimROSWrapper(const ros::NodeHandle& nh, const ros::NodeHandle& nh_private, const std::string& host_ip)
-    : nh_(nh), nh_private_(nh_private), img_async_spinner_(1, &img_timer_cb_queue_), // a thread for image callbacks to be 'spun' by img_async_spinner_
-    lidar_async_spinner_(1, &lidar_timer_cb_queue_)
-    , // same as above, but for lidar
-    host_ip_(host_ip)
+    : nh_(nh)
+    , nh_private_(nh_private)
+    , img_async_spinner_(1, &img_timer_cb_queue_) // a thread for image callbacks to be 'spun' by img_async_spinner_
+    , lidar_async_spinner_(1, &lidar_timer_cb_queue_) // same as above, but for lidar
+    , host_ip_(host_ip)
     , airsim_client_images_(host_ip)
     , airsim_client_lidar_(host_ip)
-    , airsim_settings_parser_(host_ip)
     , tf_listener_(tf_buffer_)
 {
     ros_clock_.clock.fromSec(0);
     is_used_lidar_timer_cb_queue_ = false;
     is_used_img_timer_cb_queue_ = false;
 
-    if (AirSimSettings::singleton().simmode_name != AirSimSettings::kSimModeTypeCar) {
-        airsim_mode_ = AIRSIM_MODE::DRONE;
-        ROS_INFO("Setting ROS wrapper to DRONE mode");
-    }
-    else {
-        airsim_mode_ = AIRSIM_MODE::CAR;
-        ROS_INFO("Setting ROS wrapper to CAR mode");
-    }
-
     initialize_ros();
 
-    std::cout << "AirsimROSWrapper Initialized!\n";
+    ROS_INFO("AirsimROSWrapper Initialized!");
 }
 
 void AirsimROSWrapper::initialize_airsim()
 {
     // todo do not reset if already in air?
     try {
+        // Fetch and initialize settings
+        AirSimSettingsParser airsim_settings_parser(host_ip_);
 
-        if (airsim_mode_ == AIRSIM_MODE::DRONE) {
+        if (AirSimSettings::singleton().simmode_name == AirSimSettings::kSimModeTypeMultirotor) {
+            airsim_mode_ = AIRSIM_MODE::DRONE;
+            ROS_INFO("Setting ROS wrapper to DRONE mode");
             airsim_client_ = std::unique_ptr<msr::airlib::RpcLibClientBase>(new msr::airlib::MultirotorRpcLibClient(host_ip_));
         }
         else {
+            airsim_mode_ = AIRSIM_MODE::CAR;
+            ROS_INFO("Setting ROS wrapper to CAR mode");
             airsim_client_ = std::unique_ptr<msr::airlib::RpcLibClientBase>(new msr::airlib::CarRpcLibClient(host_ip_));
         }
+
         airsim_client_->confirmConnection();
         airsim_client_images_.confirmConnection();
         airsim_client_lidar_.confirmConnection();
@@ -79,8 +78,7 @@ void AirsimROSWrapper::initialize_airsim()
     }
     catch (rpc::rpc_error& e) {
         std::string msg = e.get_error().as<std::string>();
-        std::cout << "Exception raised by the API, something went wrong." << std::endl
-                  << msg << std::endl;
+        ROS_ERROR("Exception raised by the API, something went wrong: %s", msg.c_str());
     }
 }
 

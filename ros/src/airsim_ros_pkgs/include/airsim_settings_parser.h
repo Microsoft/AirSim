@@ -1,3 +1,6 @@
+#ifndef AIRSIM_SETTINGS_PARSER_H
+#define AIRSIM_SETTINGS_PARSER_H
+
 #include "common/common_utils/StrictMode.hpp"
 STRICT_MODE_OFF
 #ifndef RPCLIB_MSGPACK
@@ -6,11 +9,9 @@ STRICT_MODE_OFF
 #include "rpc/rpc_error.h"
 STRICT_MODE_ON
 
-#include "vehicles/multirotor/api/MultirotorRpcLibClient.hpp"
-#include "common/common_utils/FileSystem.hpp"
-#include <iostream>
-#include <chrono>
 #include "common/AirSimSettings.hpp"
+#include "common/common_utils/FileSystem.hpp"
+#include "vehicles/multirotor/api/MultirotorRpcLibClient.hpp"
 
 // a minimal airsim settings parser, adapted from Unreal/Plugins/AirSim/SimHUD/SimHUD.h
 class AirSimSettingsParser
@@ -33,3 +34,5 @@ private:
     std::string settings_text_;
     std::string host_ip_;
 };
+
+#endif // AIRSIM_SETTINGS_PARSER_H

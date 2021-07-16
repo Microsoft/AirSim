@@ -6,7 +6,6 @@ STRICT_MODE_OFF //todo what does this do?
 #include "rpc/rpc_error.h"
     STRICT_MODE_ON
 
-#include "airsim_settings_parser.h"
 #include "common/AirSimSettings.hpp"
 #include "common/common_utils/FileSystem.hpp"
 #include "sensors/lidar/LidarSimpleParams.hpp"
@@ -320,7 +319,6 @@ private:
     msr::airlib::GeoPoint origin_geo_point_; // gps coord of unreal origin
     airsim_ros_pkgs::GPSYaw origin_geo_point_msg_; // todo duplicate
 
-    AirSimSettingsParser airsim_settings_parser_;
     std::unordered_map<std::string, std::unique_ptr<VehicleROS>> vehicle_name_ptr_map_;
     static const std::unordered_map<int, std::string> image_type_int_to_string_map_;
 
