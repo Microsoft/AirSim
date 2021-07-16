@@ -124,7 +124,6 @@ int main(int _argc, char** _argv)
     gazebo::transport::SubscriberPtr sub_pose1 = node->Subscribe("~/pose/local/info", cbLocalPose);
     gazebo::transport::SubscriberPtr sub_pose2 = node->Subscribe("~/pose/info", cbGobalPose);
 
-    // Busy wait loop...replace with your own code as needed.
     while (true)
         gazebo::common::Time::MSleep(10);
 
