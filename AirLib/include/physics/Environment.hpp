@@ -8,6 +8,7 @@
 #include "common/UpdatableObject.hpp"
 #include "common/CommonStructs.hpp"
 #include "common/EarthUtils.hpp"
+#include "common/GeodeticConverter.hpp"
 
 namespace msr
 {
@@ -53,12 +54,13 @@ namespace airlib
 
             setHomeGeoPoint(initial_.geo_point);
 
-            updateState(initial_, home_geo_point_);
+            updateState(initial_);
         }
 
         void setHomeGeoPoint(const GeoPoint& home_geo_point)
         {
             home_geo_point_ = HomeGeoPoint(home_geo_point);
+            geodetic_converter_.setHome(home_geo_point);
         }
 
         GeoPoint getHomeGeoPoint() const
@@ -87,7 +89,7 @@ namespace airlib
 
         virtual void update() override
         {
-            updateState(current_, home_geo_point_);
+            updateState(current_);
         }
 
     protected:
@@ -106,9 +108,9 @@ namespace airlib
         }
 
     private:
-        static void updateState(State& state, const HomeGeoPoint& home_geo_point)
+        void updateState(State& state)
         {
-            state.geo_point = EarthUtils::nedToGeodetic(state.position, home_geo_point);
+            geodetic_converter_.ned2Geodetic(state.position, state.geo_point);
 
             real_T geo_pot = EarthUtils::getGeopotential(state.geo_point.altitude / 1000.0f);
             state.temperature = EarthUtils::getStandardTemperature(geo_pot);
@@ -122,6 +124,7 @@ namespace airlib
     private:
         State initial_, current_;
         HomeGeoPoint home_geo_point_;
+        GeodeticConverter geodetic_converter_;
     };
 }
 } //namespace
