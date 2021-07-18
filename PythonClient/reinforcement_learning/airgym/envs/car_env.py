@@ -18,8 +18,10 @@ class AirSimCarEnv(AirSimEnv):
 
         self.state = {
             "position": np.zeros(3),
-            "collision": False,
             "prev_position": np.zeros(3),
+            "pose": None,
+            "prev_pose": None,
+            "collision": False,
         }
 
         self.car = airsim.CarClient(ip=ip_address)
@@ -31,10 +33,6 @@ class AirSimCarEnv(AirSimEnv):
 
         self.car_controls = airsim.CarControls()
         self.car_state = None
-
-        self.state["pose"] = None
-        self.state["prev_pose"] = None
-        self.state["collision"] = None
 
     def _setup_car(self):
         self.car.reset()
@@ -48,6 +46,7 @@ class AirSimCarEnv(AirSimEnv):
     def _do_action(self, action):
         self.car_controls.brake = 0
         self.car_controls.throttle = 1
+
         if action == 0:
             self.car_controls.throttle = 0
             self.car_controls.brake = 1
@@ -65,10 +64,10 @@ class AirSimCarEnv(AirSimEnv):
         self.car.setCarControls(self.car_controls)
         time.sleep(1)
 
-    def transform_obs(self, responses):
-        img1d = np.array(responses[0].image_data_float, dtype=np.float)
+    def transform_obs(self, response):
+        img1d = np.array(response.image_data_float, dtype=np.float)
         img1d = 255 / np.maximum(np.ones(img1d.size), img1d)
-        img2d = np.reshape(img1d, (responses[0].height, responses[0].width))
+        img2d = np.reshape(img1d, (response.height, response.width))
 
         from PIL import Image
 
@@ -79,51 +78,47 @@ class AirSimCarEnv(AirSimEnv):
 
     def _get_obs(self):
         responses = self.car.simGetImages([self.image_request])
-        image = self.transform_obs(responses)
+        image = self.transform_obs(responses[0])
 
         self.car_state = self.car.getCarState()
-        collision = self.car.simGetCollisionInfo().has_collided
 
         self.state["prev_pose"] = self.state["pose"]
         self.state["pose"] = self.car_state.kinematics_estimated
-        self.state["collision"] = collision
+        self.state["collision"] = self.car.simGetCollisionInfo().has_collided
 
         return image
 
     def _compute_reward(self):
         MAX_SPEED = 300
         MIN_SPEED = 10
-        thresh_dist = 3.5
-        beta = 3
+        THRESH_DIST = 3.5
+        BETA = 3
 
-        z = 0
         pts = [
-            np.array([0, -1, z]),
-            np.array([130, -1, z]),
-            np.array([130, 125, z]),
-            np.array([0, 125, z]),
-            np.array([0, -1, z]),
-            np.array([130, -1, z]),
-            np.array([130, -128, z]),
-            np.array([0, -128, z]),
-            np.array([0, -1, z]),
+            np.array([x, y, 0])
+            for x, y in [
+                (0, -1), (130, -1), (130, 125), (0, 125),
+                (0, -1), (130, -1), (130, -128), (0, -128),
+                (0, -1),
+            ]
         ]
-        pd = self.state["pose"].position
-        car_pt = np.array([pd.x_val, pd.y_val, pd.z_val])
+        car_pt = self.state["pose"].position.to_numpy_array()
 
         dist = 10000000
         for i in range(0, len(pts) - 1):
             dist = min(
                 dist,
-                np.linalg.norm(np.cross((car_pt - pts[i]), (car_pt - pts[i + 1])))
+                np.linalg.norm(
+                    np.cross((car_pt - pts[i]), (car_pt - pts[i + 1]))
+                )
                 / np.linalg.norm(pts[i] - pts[i + 1]),
             )
 
         # print(dist)
-        if dist > thresh_dist:
+        if dist > THRESH_DIST:
             reward = -3
         else:
-            reward_dist = math.exp(-beta * dist) - 0.5
+            reward_dist = math.exp(-BETA * dist) - 0.5
             reward_speed = (
                 (self.car_state.speed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)
             ) - 0.5
