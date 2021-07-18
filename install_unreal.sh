@@ -23,7 +23,7 @@ fi
 
 #install unreal
 if [[ !(-d "$UnrealDir") ]]; then
-	git clone -b 4.25 https://github.com/EpicGames/UnrealEngine.git "$UnrealDir"
+	git clone -b 4.25 git@github.com:EpicGames/UnrealEngine.git "$UnrealDir"
 	pushd "$UnrealDir" >/dev/null
 
 	./Setup.sh
