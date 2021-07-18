@@ -148,6 +148,20 @@ Throttle, brake, steering and gear selections for control. Both automatic and ma
 
 ### Simple PID Position Controller Node 
 
+#### Build with your configuration
+
+AirSim's ROS nodes are still being developed; e.g., in [`pd_position_controller_simple.cpp`](https://github.com/microsoft/AirSim/blob/master/ros/src/airsim_ros_pkgs/src/pd_position_controller_simple.cpp).  
+To make this ROS node work, you need to replace this line:
+```
+airsim_odom_sub_ = nh_.subscribe("/airsim_node/odom_local_ned", 50, &PIDPositionController::airsim_odom_cb, this);
+```
+With line
+```
+airsim_odom_sub_ = nh_.subscribe("/airsim_node/NAME/odom_local_ned", 50, &PIDPositionController::airsim_odom_cb, this);
+```
+Where `NAME` is the name of the drone in the settings.json file.  
+Otherwise you would get `[ERROR] [1234567890.1234567890]: [PIDPositionController] Waiting for odometry!`.
+
 #### Parameters:
 - PD controller parameters:
   * `/pd_position_node/kd_x` [double],   
